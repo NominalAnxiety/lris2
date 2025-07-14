@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
 
 
 class MaskGenWidget(QWidget):
-    change_data = pyqtSignal(list)
+    change_data = pyqtSignal(list,name="target list")
     def __init__(self):
         super().__init__()
 

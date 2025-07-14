@@ -4,8 +4,8 @@ when you click the bar on the left then the image will display which row that is
 additionally It will also interact with the target list
 it will display where the slit is place and what stars will be shown
 """
-from PyQt6.QtCore import Qt, pyqtSlot
-from PyQt6.QtGui import QBrush, QPen, QPainter, QColor
+from PyQt6.QtCore import Qt, pyqtSlot, QPointF
+from PyQt6.QtGui import QBrush, QPen, QPainter, QColor, QFont
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -19,10 +19,14 @@ from PyQt6.QtWidgets import (
     QLayout,
     QGraphicsRectItem,
     QStyleOptionGraphicsItem,
+    QGraphicsLineItem,
+    QGraphicsTextItem,
+    QGraphicsItemGroup,
 
 
 )
 
+#will have another thing that will dispaly all the stars in the sky at the time
 
 
 class interactiveBars(QGraphicsRectItem):
@@ -50,38 +54,73 @@ class interactiveBars(QGraphicsRectItem):
             painter.setPen(QPen(QColor("black"), 1))
         painter.drawRect(self.rect())
             
-        #return super().paint(painter, option, widget)
-
-        
 
 
-class interactiveSlits(QGraphicsItem):
-    def __init__(self):
+
+class interactiveSlits(QGraphicsItemGroup):
+    def __init__(self,x,y):
         super().__init__()
+        #line length will be dependent on the amount of slits
+        #line position will depend on the slit position of the slits (need to check slit width and postion)
+        #will have default lines down the middle
+        #default NONE next to lines that don't have a star
+        self.line = QGraphicsLineItem(x,y,x,y+7)
+        self.line.setPen(QPen(Qt.GlobalColor.red, 2))
+
+        self.star = QGraphicsTextItem("NONE")
+        self.star.setDefaultTextColor(Qt.GlobalColor.red)
+        self.star.setFont(QFont("Arial",6))
+        self.star.setPos(x+5,y-4)
+
+        self.addToGroup(self.line)
+        self.addToGroup(self.star)
+
+    @pyqtSlot(float,name="slit position")
+    def change_position(self,pos):
+        #assuming position is a tuple (x,y) (pos = position)
+        self.line = QGraphicsLineItem(pos[0],pos[1],pos[0],pos[1]+7)
+        self.star.setPos(pos[0]+5,pos[1]-4)
+        #update the line position and the label position
+
+    @pyqtSlot(str,name="star name")
+    def change_star(self,star_name):
+        self.star.setPlainText(star_name)
+
         
 
-class interactiveSlitMask(QVBoxLayout):
+class interactiveSlitMask(QWidget):
     def __init__(self):
         super().__init__()
         #this will display the image
-        self.scene = QGraphicsScene(0,0,480,550)
+        self.scene = QGraphicsScene(0,0,480,520)
         
-        master_rect = interactiveBars(10,10,0)
+        master_rect = interactiveBars(0,7,0)
+        master_line = interactiveSlits(240,7)
+
         rect_list = []
+        line_list = []
+
         for i in range(72):
-            rect_list.append(interactiveBars(10,10+i*7,i))
+            rect_list.append(interactiveBars(0,i*7+7,i))
+        for i in range(72):
+            line_list.append(interactiveSlits(240,7*i+7))
 
         self.scene.addItem(master_rect)
+        
 
         for i in range(1,72):
             self.scene.addItem(rect_list[i])
+
+        self.scene.addItem(master_line)
+        for i in range(1,72):
+            self.scene.addItem(line_list[i])
         
         view = QGraphicsView(self.scene)
-        #view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        #I need to create a list of rectangles that can be accessed later to click on them
-        #.stackafter allows you to stack your items after another item in a scene
-        #scene.selectedItems()
+        layout = QVBoxLayout()
+        layout.addWidget(view)
 
-        self.addWidget(view)
+
+        self.setLayout(layout)
 

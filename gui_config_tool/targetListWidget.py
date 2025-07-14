@@ -56,7 +56,7 @@ class TargetDisplayWidget(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
         #self.table.setModel(self.table)
-    @pyqtSlot(list)
+    @pyqtSlot(list,name="target list")
     def change_data(self,data):
         self.data = data
         self.model = TableModel(self.data)

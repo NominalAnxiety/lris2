@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
 
         target_display = TargetDisplayWidget(sample_data)
         interactive_slit_mask = interactiveSlitMask()
-        interactive_slit_mask.sizeHint
+        interactive_slit_mask.setFixedSize(520,550)
 
         #should use size policy and size hint
 
@@ -72,7 +72,7 @@ class MainWindow(QMainWindow):
         layoutV2.addWidget(import_target_list_display)
 
         layoutH1.addWidget(temp_widget2)
-        layoutH1.addLayout(interactive_slit_mask) #temp_widget3
+        layoutH1.addWidget(interactive_slit_mask) #temp_widget3
         
         layoutV1.addLayout(layoutH1)
         layoutV1.addWidget(target_display)
