@@ -24,10 +24,10 @@ class TargetList:
     def __init__(self,file_path):
 
         self.file_path = file_path
-        '''
-        reads a starlist file and returns a list [name: Ra,Dec,equinox,[other]]
-        '''
         self.target_list = []
+        self._parse_file()
+        
+    def _parse_file(self):
         with open(self.file_path) as file:
             for line in file:
                 if line[0] != "#" and line.split():

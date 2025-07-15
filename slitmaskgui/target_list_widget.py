@@ -1,6 +1,6 @@
 
 #from inputTargets import TargetList
-from menuBar import MenuBar
+from slitmaskgui.menu_bar import MenuBar
 from PyQt6.QtCore import Qt, QAbstractTableModel, pyqtSlot
 from PyQt6.QtWidgets import (
     QWidget,

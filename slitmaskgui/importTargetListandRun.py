@@ -1,6 +1,6 @@
 
-from inputTargets import TargetList
-from targetListWidget import TargetDisplayWidget
+from slitmaskgui.input_targets import TargetList
+from slitmaskgui.target_list_widget import TargetDisplayWidget
 from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import (
     QFileDialog,

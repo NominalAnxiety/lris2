@@ -15,10 +15,10 @@ just take that and display that instead of through my awful input targets functi
 
 
 #just importing everything for now. When on the final stages I will not import what I don't need
-from targetListWidget import TargetDisplayWidget
-from importTargetListandRun import MaskGenWidget
-from menuBar import MenuBar
-from maskConfigurations import MaskConfigurationsWidget
+from slitmaskgui.target_list_widget import TargetDisplayWidget
+from slitmaskgui.import_target_list import MaskGenWidget
+from slitmaskgui.menu_bar import MenuBar
+from slitmaskgui.mask_configurations import MaskConfigurationsWidget
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QApplication,
@@ -79,8 +79,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
 
-
-app = QApplication([])
-window = MainWindow()
-window.show()
-app.exec()
+if __name__ == "__main__":
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec()
