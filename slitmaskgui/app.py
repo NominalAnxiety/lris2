@@ -20,6 +20,7 @@ from slitmaskgui.import_target_list import MaskGenWidget
 from slitmaskgui.menu_bar import MenuBar
 from slitmaskgui.mask_configurations import MaskConfigurationsWidget
 from PyQt6.QtCore import Qt
+import sys
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -79,8 +80,10 @@ class MainWindow(QMainWindow):
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
 
-if __name__ == "__main__":
-    app = QApplication([])
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     app.exec()
