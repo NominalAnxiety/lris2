@@ -4,7 +4,7 @@ additionally, when you click on the slits, it will highlight the corresponding b
 interactive image and highlight the corresponding star in the target list table
 """
 
-from menuBar import MenuBar
+from slitmaskgui.menu_bar import MenuBar
 from PyQt6.QtCore import Qt, QAbstractTableModel, pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget,
