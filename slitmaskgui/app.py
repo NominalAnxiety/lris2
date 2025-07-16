@@ -18,10 +18,11 @@ just take that and display that instead of through my awful input targets functi
 from slitmaskgui.target_list_widget import TargetDisplayWidget
 from slitmaskgui.import_target_list import MaskGenWidget
 from slitmaskgui.menu_bar import MenuBar
-from interactiveSlitMask import interactiveSlitMask
+from slitmaskgui.interactive_slit_mask import interactiveSlitMask
 from slitmaskgui.mask_configurations import MaskConfigurationsWidget
 from PyQt6.QtCore import Qt
 import sys
+import random
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -30,6 +31,11 @@ from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
 )
+
+pos_dict = {1:(240,"none")}
+for i in range(2,73):
+    pos_dict[i]=(random.randint(100,400),"bob")
+
 
 class TempWidgets(QLabel):
     def __init__(self,w,h,text:str="hello"):
@@ -59,6 +65,8 @@ class MainWindow(QMainWindow):
         target_display = TargetDisplayWidget(sample_data)
         interactive_slit_mask = interactiveSlitMask()
         interactive_slit_mask.setFixedSize(520,550)
+
+        interactive_slit_mask.change_slit_and_star(pos_dict)
 
         #should use size policy and size hint
 

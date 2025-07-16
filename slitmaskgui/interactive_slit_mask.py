@@ -58,23 +58,28 @@ class interactiveBars(QGraphicsRectItem):
 
 
 class interactiveSlits(QGraphicsItemGroup):
-    def __init__(self,x,y):
+    def __init__(self,x,y,name="NONE"):
         super().__init__()
         #line length will be dependent on the amount of slits
         #line position will depend on the slit position of the slits (need to check slit width and postion)
         #will have default lines down the middle
         #default NONE next to lines that don't have a star
-        self.line = QGraphicsLineItem(x,y,x,y+7)
+        self.x_pos = x
+        self.y_pos = y
+        self.line = QGraphicsLineItem(self.x_pos,self.y_pos,self.x_pos,self.y_pos+7)
         #self.line = QLineF(x,y,x,y+7)
         self.line.setPen(QPen(Qt.GlobalColor.red, 2))
 
-        self.star = QGraphicsTextItem("NONE")
+        self.star_name = name
+        self.star = QGraphicsTextItem(self.star_name)
         self.star.setDefaultTextColor(Qt.GlobalColor.red)
         self.star.setFont(QFont("Arial",6))
         self.star.setPos(x+5,y-4)
 
         self.addToGroup(self.line)
         self.addToGroup(self.star)
+    def get_y_value(self):
+        return self.y_pos
 
 
     
@@ -95,27 +100,42 @@ class interactiveSlitMask(QWidget):
             temp_slit = interactiveSlits(240,7*i+7)
             self.scene.addItem(temp_slit)
 
-        view = QGraphicsView(self.scene)
-        view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.view = QGraphicsView(self.scene)
+        self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         layout = QVBoxLayout()
-        layout.addWidget(view)
+        layout.addWidget(self.view)
 
 
         self.setLayout(layout)
 
     @pyqtSlot(float,name="slit position")
-    def slit_and_name_animation(self,pos):
+    def change_slit_and_star(self,pos):
+        #will get it in the form of {1:(position,star_names),...}
+        self.position = list(pos.values())
+        new_items = []
+        slits_to_replace = [
+            item for item in reversed(self.scene.items())
+            if isinstance(item, QGraphicsItemGroup)
+        ]
+        for num, item in enumerate(slits_to_replace):
+            if num >= len(self.position):
+                break  # Safety check: don't go out of bounds
 
-        for item in self.scene.items():
-            if isinstance(item, QGraphicsItemGroup):
-                print('hi')
+            try:
+                y_value = item.get_y_value()
+                self.scene.removeItem(item)
+                x_pos, name = self.position[num]
+                new_item = interactiveSlits(x_pos, y_value, name)
+                new_items.append(new_item)
+            except Exception as e:
+                print(f"Error processing item {num}: {e}")
+                continue
+        #item_list.reverse()
+        for item in new_items:
+            self.scene.addItem(item)
+        self.view = QGraphicsScene(self.scene)
 
 
-        pass
-
-    @pyqtSlot(str,name="star name")
-    def change_star(self,star_name):
-        #self.star.setPlainText(star_name)
-        pass
+        
 
