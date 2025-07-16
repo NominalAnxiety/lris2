@@ -18,6 +18,7 @@ just take that and display that instead of through my awful input targets functi
 from slitmaskgui.target_list_widget import TargetDisplayWidget
 from slitmaskgui.import_target_list import MaskGenWidget
 from slitmaskgui.menu_bar import MenuBar
+from interactiveSlitMask import interactiveSlitMask
 from slitmaskgui.mask_configurations import MaskConfigurationsWidget
 from PyQt6.QtCore import Qt
 import sys
@@ -56,6 +57,10 @@ class MainWindow(QMainWindow):
         sample_data = [[0,1,1,1],[1,0,1,1]]
 
         target_display = TargetDisplayWidget(sample_data)
+        interactive_slit_mask = interactiveSlitMask()
+        interactive_slit_mask.setFixedSize(520,550)
+
+        #should use size policy and size hint
 
         #temp_widget1 = TempWidgets(250,300,"Mask Configurations\nWill display a list of\nall previous configurations")
         temp_widget2 = TempWidgets(200,500,"This will display\nall of the widths\nand positions of\nthe bar pairs")
@@ -68,7 +73,7 @@ class MainWindow(QMainWindow):
         layoutV2.addWidget(import_target_list_display)
 
         layoutH1.addWidget(temp_widget2)
-        layoutH1.addWidget(temp_widget3)
+        layoutH1.addWidget(interactive_slit_mask) #temp_widget3
         
         layoutV1.addLayout(layoutH1)
         layoutV1.addWidget(target_display)
