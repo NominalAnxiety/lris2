@@ -5,7 +5,7 @@ interactive image and highlight the corresponding star in the target list table
 """
 
 from slitmaskgui.menu_bar import MenuBar
-from PyQt6.QtCore import Qt, QAbstractTableModel, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import Qt, QAbstractTableModel, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtWidgets import (
     QWidget,
     QTableView,
@@ -25,6 +25,10 @@ class TableModel(QAbstractTableModel):
             #should add something about whether its vertical or horizontal
             if orientation == Qt.Orientation.Horizontal:
                 return ["Row","Center","Width"][section]
+        if role == Qt.ItemDataRole.SizeHintRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return[QSize(1,3),QSize(20,30),QSize(10,30)][section]
+            return QSize(20,30)
         return super().headerData(section, orientation, role)
 
 
@@ -41,7 +45,7 @@ class TableModel(QAbstractTableModel):
 
         return len(self._data[0])
 
-class SlitDispaly(QWidget):
+class SlitDisplay(QWidget):
     change_slit_position = pyqtSignal(list,name="slit positions") #change name to match that in the interactive slit mask
     def __init__(self,data=[]):
         super().__init__()

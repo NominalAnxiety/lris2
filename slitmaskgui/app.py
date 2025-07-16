@@ -20,6 +20,7 @@ from slitmaskgui.import_target_list import MaskGenWidget
 from slitmaskgui.menu_bar import MenuBar
 from slitmaskgui.interactive_slit_mask import interactiveSlitMask
 from slitmaskgui.mask_configurations import MaskConfigurationsWidget
+from slitmaskgui.slit_position_table import SlitDisplay
 from PyQt6.QtCore import Qt
 import sys
 import random
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow):
         mask_config_widget.setMaximumHeight(200)
         import_target_list_display = MaskGenWidget()
         sample_data = [[0,1,1,1],[1,0,1,1]]
+        sample_row_data = [[0,1,0],[1,1,1]]
 
         target_display = TargetDisplayWidget(sample_data)
         interactive_slit_mask = interactiveSlitMask()
@@ -68,26 +70,33 @@ class MainWindow(QMainWindow):
 
         interactive_slit_mask.change_slit_and_star(pos_dict)
 
+        slit_position_table = SlitDisplay(sample_row_data)
+        slit_position_table.setFixedSize(220,550)
+
         #should use size policy and size hint
 
         #temp_widget1 = TempWidgets(250,300,"Mask Configurations\nWill display a list of\nall previous configurations")
-        temp_widget2 = TempWidgets(200,500,"This will display\nall of the widths\nand positions of\nthe bar pairs")
-        temp_widget3 = TempWidgets(500,500,"This will display the current Mask Configuration")
+        #temp_widget2 = TempWidgets(200,500,"This will display\nall of the widths\nand positions of\nthe bar pairs")
+        #temp_widget3 = TempWidgets(500,500,"This will display the current Mask Configuration")
 
 
         import_target_list_display.change_data.connect(target_display.change_data)
 
         layoutV2.addWidget(mask_config_widget)#temp_widget1
         layoutV2.addWidget(import_target_list_display)
+        layoutV2.setSpacing(1)
 
-        layoutH1.addWidget(temp_widget2)
+        layoutH1.addWidget(slit_position_table)#temp_widget2)
         layoutH1.addWidget(interactive_slit_mask) #temp_widget3
+        layoutH1.setSpacing(1)
         
         layoutV1.addLayout(layoutH1)
         layoutV1.addWidget(target_display)
+        layoutV1.setSpacing(1)
 
         main_layout.addLayout(layoutV1)
         main_layout.addLayout(layoutV2)
+        main_layout.setSpacing(1)
 
         widget = QWidget()
         widget.setLayout(main_layout)
