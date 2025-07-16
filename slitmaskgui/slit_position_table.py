@@ -25,10 +25,9 @@ class TableModel(QAbstractTableModel):
             #should add something about whether its vertical or horizontal
             if orientation == Qt.Orientation.Horizontal:
                 return ["Row","Center","Width"][section]
-        if role == Qt.ItemDataRole.SizeHintRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return[QSize(1,3),QSize(20,30),QSize(10,30)][section]
-            return QSize(20,30)
+            if orientation == Qt.Orientation.Vertical:
+                
+                return None
         return super().headerData(section, orientation, role)
 
 
@@ -45,9 +44,14 @@ class TableModel(QAbstractTableModel):
 
         return len(self._data[0])
 
+
+width = .7
+default_slit_display_list = [[i+1,0.00,width] for i in range(72)]
+
+
 class SlitDisplay(QWidget):
-    change_slit_position = pyqtSignal(list,name="slit positions") #change name to match that in the interactive slit mask
-    def __init__(self,data=[]):
+    highlight_other = pyqtSignal(int,name="row selected") #change name to match that in the interactive slit mask
+    def __init__(self,data=default_slit_display_list):
         super().__init__()
 
         self.setFixedSize(200,500)
@@ -59,6 +63,17 @@ class SlitDisplay(QWidget):
         self.model = TableModel(self.data)
         
         self.table.setModel(self.model)
+        
+        self.table.setColumnWidth(0, 32)
+        self.table.setColumnWidth(1,90)
+        self.table.setColumnWidth(2,50)
+
+        self.table.verticalHeader().setDefaultSectionSize(0)
+        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+        self.table.selectRow(1)
+
+        self.table.selectionModel().selectionChanged.connect(self.row_selected)
 
         layout = QVBoxLayout()
 
@@ -72,12 +87,15 @@ class SlitDisplay(QWidget):
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
     
-    def change_slits_in_image(self):
+    def row_selected(self):
         #I have to emit a list of x,y positions [[x,y],...]
         #if there is no star in a row then we have to make it so that there is not change in position
-        emitted_list = []
-        for x in self.data: #this does not account for any unused bars
-            emitted_list.append([x[1],x[0]*7-7])
-            #perhaps if there is no star in a position we will just make its x coordinate what the middle would be
-            #this is so I don't have to worry about that here
-        self.change_slit_position.emit(emitted_list)
+        #I probably need to find the row
+        selected_row = self.table.selectionModel().currentIndex().row()
+        self.highlight_other.emit(selected_row)
+
+    @pyqtSlot(int,name="other row selected")
+    def select_corresponding(self,row):
+        self.row = row
+        self.table.selectRow(self.row)
+ 

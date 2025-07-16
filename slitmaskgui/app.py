@@ -62,16 +62,20 @@ class MainWindow(QMainWindow):
         mask_config_widget.setMaximumHeight(200)
         import_target_list_display = MaskGenWidget()
         sample_data = [[0,1,1,1],[1,0,1,1]]
-        sample_row_data = [[0,1,0],[1,1,1]]
 
         target_display = TargetDisplayWidget(sample_data)
         interactive_slit_mask = interactiveSlitMask()
         interactive_slit_mask.setFixedSize(520,550)
 
         interactive_slit_mask.change_slit_and_star(pos_dict)
+        
 
-        slit_position_table = SlitDisplay(sample_row_data)
+        slit_position_table = SlitDisplay()
         slit_position_table.setFixedSize(220,550)
+        
+        
+        slit_position_table.highlight_other.connect(interactive_slit_mask.select_corresponding_row)
+        interactive_slit_mask.row_selected.connect(slit_position_table.select_corresponding)
 
         #should use size policy and size hint
 
