@@ -51,6 +51,9 @@ class TargetDisplayWidget(QWidget):
         
         self.table.setModel(self.model)
 
+        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
+        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+
         layout = QVBoxLayout()
 
         layout.addWidget(self.table)

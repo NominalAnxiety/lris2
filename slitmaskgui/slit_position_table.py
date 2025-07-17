@@ -10,7 +10,8 @@ from PyQt6.QtWidgets import (
     QWidget,
     QTableView,
     QVBoxLayout,
-    QTableWidget
+    QTableWidget,
+    QSizePolicy
 
 
 )
@@ -20,11 +21,12 @@ class TableModel(QAbstractTableModel):
 
         super().__init__()
         self._data = data
+        self.headers = ["Row","Center","Width"]
     def headerData(self, section, orientation, role = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             #should add something about whether its vertical or horizontal
             if orientation == Qt.Orientation.Horizontal:
-                return ["Row","Center","Width"][section]
+                return self.headers[section]
             if orientation == Qt.Orientation.Vertical:
                 
                 return None
@@ -46,7 +48,7 @@ class TableModel(QAbstractTableModel):
 
 
 width = .7
-default_slit_display_list = [[i+1,0.00,width] for i in range(72)]
+default_slit_display_list = [[i+1,0.00,width] for i in range(73)]
 
 
 class SlitDisplay(QWidget):
@@ -54,7 +56,10 @@ class SlitDisplay(QWidget):
     def __init__(self,data=default_slit_display_list):
         super().__init__()
 
-        self.setFixedSize(200,500)
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.MinimumExpanding
+        )
 
         self.data = data #will look like [[row,center,width],...]
 
@@ -64,14 +69,14 @@ class SlitDisplay(QWidget):
         
         self.table.setModel(self.model)
         
-        self.table.setColumnWidth(0, 32)
-        self.table.setColumnWidth(1,90)
+        self.table.setColumnWidth(0, 32) #will avoid magic numbers here
+        self.table.setColumnWidth(1,90) #will probably do QsizePolicy
         self.table.setColumnWidth(2,50)
-
+        
         self.table.verticalHeader().setDefaultSectionSize(0)
-        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
-        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
-        self.table.selectRow(1)
+        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
+        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection) #this makes it so you can only select one row at a time
+
 
         self.table.selectionModel().selectionChanged.connect(self.row_selected)
 
@@ -80,12 +85,19 @@ class SlitDisplay(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
         #self.table.setModel(self.table)
+        
+
+    def sizeHint(self):
+        return QSize(40,120)
     
     @pyqtSlot(list,name="input slit positions")
     def change_data(self,data):
-        self.data = data
-        self.model = TableModel(self.data)
-        self.table.setModel(self.model)
+        self.model.beginResetModel()
+        self.model._data = data
+        self.model.endResetModel()
+        # self.data = data
+        # self.model = TableModel(self.data)
+        # self.table.setModel(self.model)
     
     def row_selected(self):
         #I have to emit a list of x,y positions [[x,y],...]

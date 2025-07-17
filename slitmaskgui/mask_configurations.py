@@ -4,7 +4,7 @@ A button at the bottom to save the mask, and one right next to it to save all th
 3 buttons on the top: open, copy, close
 """
 
-from PyQt6.QtCore import Qt, QAbstractTableModel
+from PyQt6.QtCore import Qt, QAbstractTableModel,QSize
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QGroupBox,
     QTableView,
+    QSizePolicy
 )
 
 class Button(QPushButton):
@@ -52,6 +53,10 @@ class MaskConfigurationsWidget(QWidget):
     def __init__(self):
         super().__init__()
         #self.setStyleSheet("border: 2px solid black;")
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.MinimumExpanding
+        )
 
         temp_data = [["saved","batmask"],["unsaved","spidermask"]]
 
@@ -90,6 +95,8 @@ class MaskConfigurationsWidget(QWidget):
         main_layout.addWidget(group_box)
 
         self.setLayout(main_layout)
+    def sizeHint(self):
+        return QSize(40,120)
 
 
 

@@ -1,7 +1,7 @@
 
 from slitmaskgui.input_targets import TargetList
 from slitmaskgui.target_list_widget import TargetDisplayWidget
-from PyQt6.QtCore import QObject, pyqtSignal, Qt
+from PyQt6.QtCore import QObject, pyqtSignal, Qt, QSize
 from PyQt6.QtWidgets import (
     QFileDialog,
     QVBoxLayout,
@@ -11,7 +11,8 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QFormLayout,
     QGroupBox,
-    QBoxLayout
+    QBoxLayout,
+    QSizePolicy,
     
 )
 
@@ -22,7 +23,10 @@ class MaskGenWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.MinimumExpanding
+        )
         #self.setFixedSize(200,400)
         #self.setStyleSheet("border: 2px solid black;")
         import_target_list_button = QPushButton(text = "Import Target List")
@@ -55,7 +59,11 @@ class MaskGenWidget(QWidget):
 
 
         self.setLayout(main_layout)
+        
         #self.show()
+    
+    def sizeHint(self):
+        return QSize(40,120)
         
 
     def starlist_file_button_clicked(self):

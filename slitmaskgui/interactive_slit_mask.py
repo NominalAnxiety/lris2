@@ -4,7 +4,7 @@ when you click the bar on the left then the image will display which row that is
 additionally It will also interact with the target list
 it will display where the slit is place and what stars will be shown
 """
-from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QBrush, QPen, QPainter, QColor, QFont
 from PyQt6.QtWidgets import (
     QApplication,
@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QGraphicsLineItem,
     QGraphicsTextItem,
     QGraphicsItemGroup,
+    QSizePolicy
 
 
 )
@@ -87,6 +88,10 @@ class interactiveSlitMask(QWidget):
         #this will display the image
         #I think it would be cool to make the bars on the GUI move instead of just the slits moving
         self.scene = QGraphicsScene(0,0,480,520)
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.MinimumExpanding
+        )
 
         for i in range(72):
             temp_rect = interactiveBars(0,i*7+7,i)
@@ -108,16 +113,21 @@ class interactiveSlitMask(QWidget):
 
         self.row_num = 0
     
+    def sizeHint(self):
+        return QSize(520,550)
+    
     @pyqtSlot(int,name="row selected")
     def select_corresponding_row(self,row):
+        
         all_bars = [
             item for item in reversed(self.scene.items())
             if isinstance(item, QGraphicsRectItem)
         ]
+        
         all_bars[self.row_num].setSelected(False)
-        self.row_num = row
-
-        all_bars[self.row_num].setSelected(True)
+        if 0 <= row <len(all_bars):
+            self.row_num = row
+            all_bars[self.row_num].setSelected(True)
 
     
     def row_is_selected(self):
