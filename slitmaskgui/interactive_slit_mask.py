@@ -147,8 +147,6 @@ class interactiveSlitMask(QWidget):
             if isinstance(item, QGraphicsItemGroup)
         ]
         for num, item in enumerate(slits_to_replace):
-            if num >= len(self.position):
-                break  # Safety check: don't go out of bounds
 
             try:
                 y_value = item.get_y_value()

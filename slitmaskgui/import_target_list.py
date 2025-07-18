@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
 class MaskGenWidget(QWidget):
     change_data = pyqtSignal(list)
     change_slit_image = pyqtSignal(dict)
+    change_row_widget = pyqtSignal(list)
     def __init__(self):
         super().__init__()
 
@@ -71,7 +72,9 @@ class MaskGenWidget(QWidget):
 
             self.change_slit_image.emit(interactive_slit_mask)
 
-            self.change_data.emit(target_list.send_list())
+            self.change_data.emit(slit_mask.send_target_list())
+            self.change_row_widget.emit(slit_mask.send_row_widget_list())
+
 
             #now we need to configure the mask
             #we already configure the table but we need to have the table configured after it says its

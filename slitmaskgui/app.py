@@ -79,6 +79,7 @@ class MainWindow(QMainWindow):
 
         import_target_list_display.change_data.connect(target_display.change_data)
         import_target_list_display.change_slit_image.connect(interactive_slit_mask.change_slit_and_star)
+        import_target_list_display.change_row_widget.connect(slit_position_table.change_data)
 
         layoutV2.addWidget(mask_config_widget)#temp_widget1
         layoutV2.addWidget(import_target_list_display)

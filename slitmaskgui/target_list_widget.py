@@ -15,7 +15,7 @@ class TableModel(QAbstractTableModel):
 
         super().__init__()
         self._data = data
-        self.header = ["Name","Equinox","Magnitude","Ra","Dec","priority"]
+        self.header = ["Name","Equinox","Magnitude","Ra","Dec","Center Distance"]
         #MAGMA header is #,target name,priority,magnitude,ra,dec,center distance
     def headerData(self, section, orientation, role = ...):
         if role == Qt.ItemDataRole.DisplayRole:

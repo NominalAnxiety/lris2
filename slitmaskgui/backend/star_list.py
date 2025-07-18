@@ -18,11 +18,13 @@ import math as m
 RA="12 36 56.72988"
 Dec="+62 14 27.3984"
 
-temp_center = (189.2363745,62.240944) #Ra, Dec
+#temp_center = (189.2363745,62.240944) #Ra, Dec
 temp_center = SkyCoord(ra=RA,dec=Dec,unit=(u.hourangle,u.deg))
 
 temp_width = .7
 temp_pa = 0
+
+#dimensions are 213.76 mm x 427.51 mm I think but have no clue
 
 #I think the height, width = 10', 5' both in arcminutes
 #formula for it in arcseconds: 1/PLATE_SCALE*height
@@ -74,18 +76,40 @@ class stars_list:
             obj["x_mm"] = x_mm
             obj["y_mm"] = y_mm
 
+            with open("json payload.txt",'w') as f:
+                for x in self.payload:
+                    f.write(str(x))
+                    f.write("\n")
 
             #ok this is not how you do this bc I will only take in x and just don't care about y right now (i'll care later)
 
-        
-
-    
     def send_target_list(self):
-        pass
+        i = self.payload
+        return_list = [[x["name"],x["equinox"],x["vmag"],x["ra"],x["dec"],x["center distance"]] for x in i]
+        return return_list
 
     def send_interactive_slit_list(self):
         #have to convert it to dict {bar_num:(position,star_name)}
-        return self.payload
+        #imma just act rn like all the stars are in sequential order
+        #I am going to have an optimize function that actually gets the right amount of stars with good positions
+        #its going to also order them by bar
+        slit_dict = {}
+        _max = 72
+        for i,obj in enumerate(self.payload):
+            if _max <= 0:
+                break
+            slit_dict[i] = (240+obj["x_mm"],obj["name"])
+            _max -= 1
+
+        return slit_dict
     
-    def send_mask_bar_list(self):
-        pass
+    def send_row_widget_list(self):
+        #again, I am going to ignore the y position of the stars when placing them, I will worry about that later
+        row_list =[]
+        _max = 72
+        for i,obj in enumerate(self.payload):
+            if _max <= 0:
+                break
+            row_list.append([i+1,obj["x_mm"],self.slit_width])
+            _max -= 1
+        return row_list
