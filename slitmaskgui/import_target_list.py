@@ -1,5 +1,6 @@
 
 from slitmaskgui.input_targets import TargetList
+from slitmaskgui.backend.star_list import stars_list
 from slitmaskgui.target_list_widget import TargetDisplayWidget
 from PyQt6.QtCore import QObject, pyqtSignal, Qt, QSize
 from PyQt6.QtWidgets import (
@@ -20,6 +21,7 @@ from PyQt6.QtWidgets import (
 
 class MaskGenWidget(QWidget):
     change_data = pyqtSignal(list)
+    change_slit_image = pyqtSignal(dict)
     def __init__(self):
         super().__init__()
 
@@ -27,8 +29,6 @@ class MaskGenWidget(QWidget):
             QSizePolicy.Policy.MinimumExpanding,
             QSizePolicy.Policy.MinimumExpanding
         )
-        #self.setFixedSize(200,400)
-        #self.setStyleSheet("border: 2px solid black;")
         import_target_list_button = QPushButton(text = "Import Target List")
         name_of_mask = QLineEdit()
         name_of_mask.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -39,14 +39,8 @@ class MaskGenWidget(QWidget):
         secondary_layout = QFormLayout()
         group_layout = QVBoxLayout()
         group_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        #group_box.setStyleSheet("border: 2px solid black;")
-
-        
 
         import_target_list_button.clicked.connect(self.starlist_file_button_clicked)
-
-
-        #layout.addWidget(main_widget)
 
         secondary_layout.addRow("Mask Name:",name_of_mask)
         group_layout.addLayout(secondary_layout)
@@ -55,12 +49,7 @@ class MaskGenWidget(QWidget):
         group_box.setLayout(group_layout)
         main_layout.addWidget(group_box)
 
-        #xwidget.setLayout(layout)
-
-
         self.setLayout(main_layout)
-        
-        #self.show()
     
     def sizeHint(self):
         return QSize(40,120)
@@ -77,10 +66,21 @@ class MaskGenWidget(QWidget):
         if text_file_path: 
             print(f"Selected file: {text_file_path}")
             target_list = TargetList(text_file_path)
-            #self.new_data_list.emit(target_list.send_list())
+            slit_mask = stars_list(target_list.send_json())
+            interactive_slit_mask = slit_mask.send_interactive_slit_list()
+
+            self.change_slit_image.emit(interactive_slit_mask)
+
             self.change_data.emit(target_list.send_list())
-            
-            #TargetDisplayWidget(target_list.send_list())
+
+            #now we need to configure the mask
+            #we already configure the table but we need to have the table configured after it says its
+            #distance from center
+
+            #we also need to send the configured rows to the row_list
+            #we also need to send the slit mask configuration to the interactive slit mask
+
+
 
 
             

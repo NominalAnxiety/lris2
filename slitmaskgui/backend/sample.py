@@ -1,66 +1,58 @@
-import pandas as pd
-import numpy as np
-
-# --- Generate mock Gaia input data ---
-np.random.seed(42)  # for reproducibility
-
-N_TOTAL = 104  # 100 science + 4 alignment
-
-# Centered at RA=157.5, Dec=20.0 with ±0.15° variation
-ra_vals = 157.5 + np.random.uniform(-0.15, 0.15, N_TOTAL)
-dec_vals = 20.0 + np.random.uniform(-0.15, 0.15, N_TOTAL)
-magnitudes = np.random.uniform(9.5, 15.0, N_TOTAL)  # realistic Gaia G mag range
-
-gaia_data = pd.DataFrame({
-    'ra': ra_vals,
-    'dec': dec_vals,
-    'phot_g_mean_mag': magnitudes
-})
-
-
-
-
+from astroquery.gaia import Gaia
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-# Sort by brightness (ascending)
-gaia_data = gaia_data.sort_values('phot_g_mean_mag').reset_index(drop=True)
+def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin, height_arcmin, n_stars=100, output_file='gaia_starlist.txt'):
+    # Convert center to SkyCoord
+    center = SkyCoord(ra_center, dec_center, unit=(u.deg, u.deg), frame='icrs')
 
-# Format RA/Dec into WMKO starlist format
-def format_coord(ra_deg, dec_deg):
-    coord = SkyCoord(ra=ra_deg * u.deg, dec=dec_deg * u.deg, frame='icrs')
-    ra_str = coord.ra.to_string(unit=u.hour, sep=' ', precision=2, pad=True)
-    dec_str = coord.dec.to_string(sep=' ', alwayssign=True, precision=2, pad=True)
-    return ra_str, dec_str
+    # Convert arcsec to degrees
+    width_deg = (width_arcmin * u.arcmin).to(u.deg).value
+    height_deg = (height_arcmin * u.arcmin).to(u.deg).value
 
-# Create formatted lines for science and alignment stars
-lines = []
-center_ra = gaia_data['ra'].mean()
-center_dec = gaia_data['dec'].mean()
+    # Compute RA and Dec bounds
+    ra_min = center.ra.deg - width_deg / 2
+    ra_max = center.ra.deg + width_deg / 2
+    dec_min = center.dec.deg - height_deg / 2
+    dec_max = center.dec.deg + height_deg / 2
 
-# Science targets (entries 4–103)
-for i in range(4, 104):
-    star = gaia_data.iloc[i]
-    name = f'Gaia{i - 3:04d}'  # Gaia0001 to Gaia0100
-    ra_str, dec_str = format_coord(star['ra'], star['dec'])
-    vmag = f"{star['phot_g_mean_mag']:.2f}"
-    line = f"{name:<16}{ra_str} {dec_str} 2000.0 vmag={vmag}"
-    lines.append(line)
+    # ADQL box query
+    query = f"""
+    SELECT TOP {n_stars}
+        source_id, ra, dec, phot_g_mean_mag
+    FROM gaiadr3.gaia_source
+    WHERE ra BETWEEN {ra_min} AND {ra_max}
+      AND dec BETWEEN {dec_min} AND {dec_max}
+    ORDER BY phot_g_mean_mag ASC
+    """
+    job = Gaia.launch_job_async(query)
+    results = job.get_results()
 
-# Alignment stars (entries 0–3)
-for i in range(4):
-    star = gaia_data.iloc[i]
-    name = f'GaiaAlign{i+1:02d}'
-    ra_str, dec_str = format_coord(star['ra'], star['dec'])
-    vmag = f"{star['phot_g_mean_mag']:.2f}"
-    line = f"{name:<16}{ra_str} {dec_str} 2000.0 vmag={vmag}"
-    lines.append(line)
+    # Write starlist
+    with open(output_file, 'w') as f:
+        f.write(f"# Starlist centered at RA={center.ra.to_string(u.hour, sep=':')}, Dec={center.dec.to_string(sep=':')}\n")
+        for i, row in enumerate(results):
+            name = f"Gaia_{i+1:03d}"
+            coord = SkyCoord(ra=row['ra']*u.deg, dec=row['dec']*u.deg)
+            ra_h, ra_m, ra_s = coord.ra.hms
+            sign, dec_d, dec_m, dec_s = coord.dec.signed_dms
+            dec_d = sign * dec_d
 
-# Save to file
-with open("keck_starlist.txt", "w") as f:
-    f.write(f"# Starlist centered at RA={center_ra:.5f}, Dec={center_dec:.5f}, from mock Gaia data\n")
-    f.write("# 100 science targets + 4 alignment stars\n")
-    for line in lines:
-        f.write(line + "\n")
+            line = f"{name:<15} {int(ra_h):02d} {int(ra_m):02d} {ra_s:05.2f} {int(dec_d):+03d} {int(dec_m):02d} {abs(dec_s):04.1f} 2000.0 vmag={row['phot_g_mean_mag']:.2f}\n"
+            f.write(line)
 
-print("✅ Starlist saved to 'keck_starlist.txt'")
+    # Output center info
+    print("✅ Starlist generated!")
+    print(f"RA center  = {center.ra.to_string(u.hour, sep=':')}")
+    print(f"Dec center = {center.dec.to_string(sep=':')}")
+    print(f"Saved to   = {output_file}")
+
+# Example call — replace RA/Dec with your actual center
+query_gaia_starlist_rect(
+    ra_center=189.2363745,              # RA in degrees
+    dec_center=62.240944,               # Dec in degrees
+    width_arcmin=20,
+    height_arcmin=10,
+    n_stars=104,
+    output_file='gaia_starlist.txt'
+)

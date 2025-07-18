@@ -77,14 +77,8 @@ class MainWindow(QMainWindow):
         slit_position_table.highlight_other.connect(interactive_slit_mask.select_corresponding_row)
         interactive_slit_mask.row_selected.connect(slit_position_table.select_corresponding)
 
-        #should use size policy and size hint
-
-        #temp_widget1 = TempWidgets(250,300,"Mask Configurations\nWill display a list of\nall previous configurations")
-        #temp_widget2 = TempWidgets(200,500,"This will display\nall of the widths\nand positions of\nthe bar pairs")
-        #temp_widget3 = TempWidgets(500,500,"This will display the current Mask Configuration")
-
-
         import_target_list_display.change_data.connect(target_display.change_data)
+        import_target_list_display.change_slit_image.connect(interactive_slit_mask.change_slit_and_star)
 
         layoutV2.addWidget(mask_config_widget)#temp_widget1
         layoutV2.addWidget(import_target_list_display)

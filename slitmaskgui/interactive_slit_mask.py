@@ -137,7 +137,7 @@ class interactiveSlitMask(QWidget):
         except:
             pass
 
-    @pyqtSlot(float,name="targets converted")
+    @pyqtSlot(dict,name="targets converted")
     def change_slit_and_star(self,pos):
         #will get it in the form of {1:(position,star_names),...}
         self.position = list(pos.values())
