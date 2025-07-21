@@ -1,7 +1,8 @@
 
 from slitmaskgui.input_targets import TargetList
 from slitmaskgui.backend.star_list import stars_list
-from slitmaskgui.target_list_widget import TargetDisplayWidget
+from slitmaskgui.backend.sample import query_gaia_starlist_rect
+import re
 from PyQt6.QtCore import QObject, pyqtSignal, Qt, QSize
 from PyQt6.QtWidgets import (
     QFileDialog,
@@ -14,8 +15,13 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QBoxLayout,
     QSizePolicy,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
     
 )
+
+#need to add another class to load parameters from a text file
 
 
 
@@ -32,21 +38,42 @@ class MaskGenWidget(QWidget):
         )
         import_target_list_button = QPushButton(text = "Import Target List")
         name_of_mask = QLineEdit()
+        self.center_of_mask = QLineEdit("00 00 00.00 +00 00 00.00")
+        self.slit_width = QLineEdit(".7")
+        run_button = QPushButton(text="Run")
         name_of_mask.setAlignment(Qt.AlignmentFlag.AlignTop)
         import_target_list_button.setFixedSize(150,40)
+        run_button.setFixedSize(150,30)
+        #worry about the formatting of center_of_mask later
+
 
         group_box = QGroupBox()
         main_layout = QVBoxLayout()
-        secondary_layout = QFormLayout()
+        secondary_layout = QFormLayout() #above import targets
+        below_form_layout = QFormLayout()
+        below_layout = QHBoxLayout() # displayed below import targets
+        unit_layout = QVBoxLayout()
         group_layout = QVBoxLayout()
         group_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         import_target_list_button.clicked.connect(self.starlist_file_button_clicked)
+        run_button.clicked.connect(self.run_button)
+
+
 
         secondary_layout.addRow("Mask Name:",name_of_mask)
+        below_form_layout.addRow("Slit Width:",self.slit_width)
+        below_form_layout.addRow("Center Ra/Dec:", self.center_of_mask)
+        unit_layout.addWidget(QLabel("arcsec")) #units for slit width
+        unit_layout.addWidget(QLabel("h m s ° ' \"")) #units for center of mask
+        
+        below_layout.addLayout(below_form_layout)
+        below_layout.addLayout(unit_layout)
         group_layout.addLayout(secondary_layout)
 
         group_layout.addWidget(import_target_list_button)
+        group_layout.addLayout(below_layout)
+        group_layout.addWidget(run_button)
         group_box.setLayout(group_layout)
         main_layout.addWidget(group_box)
 
@@ -65,7 +92,6 @@ class MaskGenWidget(QWidget):
         )
 
         if text_file_path: 
-            print(f"Selected file: {text_file_path}")
             target_list = TargetList(text_file_path)
             slit_mask = stars_list(target_list.send_json())
             interactive_slit_mask = slit_mask.send_interactive_slit_list()
@@ -76,12 +102,40 @@ class MaskGenWidget(QWidget):
             self.change_row_widget.emit(slit_mask.send_row_widget_list())
 
 
-            #now we need to configure the mask
-            #we already configure the table but we need to have the table configured after it says its
-            #distance from center
+        
+    def width(self):
+        pass
+    def run_button(self):
+        #this right now will generate a starlist depending on center to speed up testing
+        path_to_file = "/Users/austinbowman/lris2/gaia_starlist.txt"
 
-            #we also need to send the configured rows to the row_list
-            #we also need to send the slit mask configuration to the interactive slit mask
+        center = re.match(r"(?P<Ra>\d{2} \d{2} \d{2}\.\d{2}(?:\.\d+)?) (?P<Dec>[\+|\-]\d{2} \d{2} \d{2}(?:\.\d+)?)",self.center_of_mask.text())
+        ra = center.group("Ra")
+        dec = center.group("Dec")
+
+        print("hi")
+
+        query_gaia_starlist_rect(
+            ra_center=ra,              # RA in degrees
+            dec_center=dec,               # Dec in degrees
+            width_arcmin=5,
+            height_arcmin=10,
+            n_stars=104,
+            output_file='gaia_starlist.txt'
+            )
+
+        #--------------------------same thing from target list button clicked ----------
+        target_list = TargetList(path_to_file)
+        slit_mask = stars_list(target_list.send_json(),ra,dec)
+        interactive_slit_mask = slit_mask.send_interactive_slit_list()
+
+        self.change_slit_image.emit(interactive_slit_mask)
+
+        self.change_data.emit(slit_mask.send_target_list())
+        self.change_row_widget.emit(slit_mask.send_row_widget_list())
+        #--------------------------------------------------------------------------
+
+        pass
 
 
 

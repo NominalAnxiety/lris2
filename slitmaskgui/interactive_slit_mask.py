@@ -141,6 +141,7 @@ class interactiveSlitMask(QWidget):
     def change_slit_and_star(self,pos):
         #will get it in the form of {1:(position,star_names),...}
         self.position = list(pos.values())
+        magic_number = 7
         new_items = []
         slits_to_replace = [
             item for item in reversed(self.scene.items())
@@ -150,9 +151,13 @@ class interactiveSlitMask(QWidget):
 
             try:
                 y_value = item.get_y_value()
+                print(y_value)
+                
                 self.scene.removeItem(item)
-                x_pos, name = self.position[num]
-                new_item = interactiveSlits(x_pos, y_value, name)
+
+                x_pos, bar_id, name = self.position[num]
+                print(bar_id*magic_number)
+                new_item = interactiveSlits(x_pos, bar_id*magic_number+7, name) #7 is the margin at the top 
                 new_items.append(new_item)
             except Exception as e:
                 print(f"Error processing item {num}: {e}")

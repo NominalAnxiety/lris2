@@ -1,34 +1,35 @@
-"""
-oh mi oh my this will be a lot of math.
-what I have to do is convert the target list that I am given (in JSON format)
-and convert it into asfdjalksdfhaklsdjfhaskldjfhaslkdfj the slit positions
-"""
+'''
+this generates the slit mask with the greatest total priority
+if stars are selected as must have then they must be there
+'''
 
+PLATE_SCALE = 0.7272 #(mm/arcsecond) on the sky
+CSU_HEIGHT = PLATE_SCALE*60*10 #height of csu in mm (height is 10 arcmin)
+CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
+TOTAL_BAR_PAIRS = 72
+print(CSU_HEIGHT/TOTAL_BAR_PAIRS)
 
-#the input_targets.py will 
-import re #this will be for effectively reading the JSON file
+class SlitMask:
+    def __init__(self,stars):
+        self.stars = stars
 
+    def calc_y_pos(self):
+        #this will calculate the bar and x of every star and remove any that do not fit in position
+        for i in self.stars:
+            y = i["y_mm"]
+            y_step = CSU_HEIGHT/TOTAL_BAR_PAIRS
 
-class StarObject:
-    def __init__(self):
+            bar_id = round(y/y_step)
+
+            i["bar id"] = bar_id
+
+        return self.stars
+
+    def optimize(self):
+        #optimizes list of stars with total highest priority. 
         pass
-
-
-star_object_array = [] #array of all the star objects
-#This should all be done in another function didiididiidididi
-
-'''
-I will be given the center in RA and Dec
-I will also be given the PA
-requirements:
-- must optimize for the greatest total priority
-- must make sure that no 2 stars are on the same bar position
-
-'''
-
-"""
-I have to convert hourangle and angle into mm and mm into pixels
-idk how the pixel thing is gonna work but for now I will do it as a percentage of the total area avaliable
-this means if there is 500 px available and 1000 mm available it will have a 1/2 scale 
-
-"""
+    
+    def make_mask(self):
+        #will return a list that will be used by the csu to configure the slits 
+        #this could also be used by the interactive slit mask
+        pass

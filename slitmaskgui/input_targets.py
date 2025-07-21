@@ -25,6 +25,8 @@ keywords = (
     "decoffset"
     )
 
+'''will have to get priority from starlist as well as if the star is a must have'''
+
 class TargetList:
 
     def __init__(self,file_path):

@@ -3,14 +3,18 @@ This will convert the Apparent RA and Dec to milimeters and give a position in m
 """
 
 
-PLATE_SCALE = 0.712515 #(mm/arcsecond) this is the estimated one
-MOSFIRE_PLATE_SCALE = 0.72449 #(mm/arcseond) this is the plate scale for mosfire idk if its the same
+PLATE_SCALE = 0.7272 #(mm/arcsecond) on the sky
+CSU_HEIGHT = PLATE_SCALE*60*10 #height of csu in mm (height is 10 arcmin)
+CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
+print(f'height:{CSU_HEIGHT} width:{CSU_WIDTH}')
+
 
 from astropy.coordinates import SkyCoord, Angle
 import astropy.units as u
 import pandas as pd
 import numpy as np
 from slitmaskgui.input_targets import TargetList
+from slitmaskgui.backend.mask_gen import SlitMask
 import math as m
 
 #Ra and Dec --> angle Degrees
@@ -23,6 +27,7 @@ temp_center = SkyCoord(ra=RA,dec=Dec,unit=(u.hourangle,u.deg))
 
 temp_width = .7
 temp_pa = 0
+
 
 #dimensions are 213.76 mm x 427.51 mm I think but have no clue
 
@@ -42,20 +47,15 @@ I also assume that RA and DEC are aligned with the x and y axis
 while that probably isn't right i'll just get something down for now
 """
 class stars_list:
-    def __init__(self,payload):
+    def __init__(self,payload,RA,Dec,slit_width=0,pa=0):
         self.payload = payload
-        self.center = temp_center
-        self.slit_width = temp_width
-        self.pa = temp_pa
+        self.center = SkyCoord(ra=RA,dec=Dec,unit=(u.hourangle,u.deg))
+        self.slit_width = slit_width
+        self.pa = pa
 
         self.complete_json()
+        #self.calc_mask()
         
-        #what this will do is have many functions with converstions
-    def decimal_to_mm(x):
-    #Need to take the difference from the center 
-        pass
-    def calc_center(center,ra,dec):
-        pass
 
     def complete_json(self): #maybe will rename this to complete payload
         for obj in self.payload:
@@ -63,8 +63,8 @@ class stars_list:
             separation = self.center.separation(star)  # returns an angle
             obj["center distance"] = float(separation.to(u.arcmin).value)
 
-            delta_ra = (star.ra - self.center.ra).to(u.arcsec)
-            delta_dec = (star.dec - self.center.dec).to(u.arcsec)
+            delta_ra = (star.ra - self.center.ra).to(u.arcsec) #from center
+            delta_dec = (star.dec - self.center.dec).to(u.arcsec) #from center
 
             delta_ra_proj = delta_ra * np.cos(self.center.dec.radian) # Correct for spherical distortion
 
@@ -82,6 +82,9 @@ class stars_list:
                     f.write("\n")
 
             #ok this is not how you do this bc I will only take in x and just don't care about y right now (i'll care later)
+    def calc_mask(self):
+        slit_mask = SlitMask(self.payload)
+        return slit_mask.calc_y_pos()
 
     def send_target_list(self):
         i = self.payload
@@ -93,12 +96,16 @@ class stars_list:
         #imma just act rn like all the stars are in sequential order
         #I am going to have an optimize function that actually gets the right amount of stars with good positions
         #its going to also order them by bar
+        total_pixels = 520 #in the future I will pass this n from interactive slit mask so that will always be correct on resize
+        self.payload = self.calc_mask()
+        
         slit_dict = {}
         _max = 72
         for i,obj in enumerate(self.payload):
             if _max <= 0:
                 break
-            slit_dict[i] = (240+obj["x_mm"],obj["name"])
+            slit_dict[i] = (total_pixels/4+(obj["x_mm"]/(CSU_WIDTH))*total_pixels,obj["bar id"],obj["name"])
+
             _max -= 1
 
         return slit_dict

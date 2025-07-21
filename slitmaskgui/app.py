@@ -34,9 +34,9 @@ from PyQt6.QtWidgets import (
     QSizePolicy
 )
 
-pos_dict = {1:(240,"none")}
-for i in range(2,73):
-    pos_dict[i]=(random.randint(100,400),"bob")
+# pos_dict = {1:(240,0,"none")}
+# for i in range(2,73):
+#     pos_dict[i]=(random.randint(100,400),i,"bob")
 
 
 class TempWidgets(QLabel):
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         interactive_slit_mask = interactiveSlitMask()
         #interactive_slit_mask.setFixedSize(520,550)
 
-        interactive_slit_mask.change_slit_and_star(pos_dict)
+        
         
 
         slit_position_table = SlitDisplay()

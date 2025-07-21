@@ -1,8 +1,9 @@
 from astroquery.gaia import Gaia
 from astropy.coordinates import SkyCoord
 import astropy.units as u
+import random
 
-def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin, height_arcmin, n_stars=100, output_file='gaia_starlist.txt'):
+def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin=5, height_arcmin=10, n_stars=100, output_file='gaia_starlist.txt'):
     # Convert center to SkyCoord
     center = SkyCoord(ra_center, dec_center, unit=(u.deg, u.deg), frame='icrs')
 
@@ -38,7 +39,7 @@ def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin, height_arcmin,
             sign, dec_d, dec_m, dec_s = coord.dec.signed_dms
             dec_d = sign * dec_d
 
-            line = f"{name:<15} {int(ra_h):02d} {int(ra_m):02d} {ra_s:05.2f} {int(dec_d):+03d} {int(dec_m):02d} {abs(dec_s):04.1f} 2000.0 vmag={row['phot_g_mean_mag']:.2f}\n"
+            line = f"{name:<15} {int(ra_h):02d} {int(ra_m):02d} {ra_s:05.2f} {int(dec_d):+03d} {int(dec_m):02d} {abs(dec_s):04.1f} 2000.0 vmag={row['phot_g_mean_mag']:.2f} priority={random.randint(1,2000)}\n"
             f.write(line)
 
     # Output center info
@@ -51,7 +52,7 @@ def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin, height_arcmin,
 query_gaia_starlist_rect(
     ra_center=189.2363745,              # RA in degrees
     dec_center=62.240944,               # Dec in degrees
-    width_arcmin=20,
+    width_arcmin=5,
     height_arcmin=10,
     n_stars=104,
     output_file='gaia_starlist.txt'
