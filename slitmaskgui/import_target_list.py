@@ -71,10 +71,15 @@ class MaskGenWidget(QWidget):
         below_layout.addLayout(unit_layout)
         group_layout.addLayout(secondary_layout)
 
-        group_layout.addWidget(import_target_list_button)
+        group_layout.addWidget(import_target_list_button, alignment=Qt.AlignmentFlag.AlignCenter)
         group_layout.addLayout(below_layout)
-        group_layout.addWidget(run_button)
+        group_layout.addStretch(40)
+        group_layout.addWidget(run_button, alignment=Qt.AlignmentFlag.AlignBottom| Qt.AlignmentFlag.AlignCenter)
         group_box.setLayout(group_layout)
+
+        title = QLabel("MASK GENERATION")
+        main_layout.addWidget(title)
+        main_layout.setSpacing(0)
         main_layout.addWidget(group_box)
 
         self.setLayout(main_layout)
