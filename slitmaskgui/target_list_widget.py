@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QTableView,
     QVBoxLayout,
-    QTableWidget
+    QLabel,
 
 
 )
@@ -57,10 +57,13 @@ class TargetDisplayWidget(QWidget):
         self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
         self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
-        layout = QVBoxLayout()
+        main_layout = QVBoxLayout()
+        title = QLabel("MASK GENERATION")
+        main_layout.addWidget(title)
+        main_layout.setSpacing(0)
 
-        layout.addWidget(self.table)
-        self.setLayout(layout)
+        main_layout.addWidget(self.table)
+        self.setLayout(main_layout)
         #self.table.setModel(self.table)
     @pyqtSlot(list,name="target list")
     def change_data(self,data):

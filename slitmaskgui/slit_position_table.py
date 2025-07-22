@@ -11,7 +11,8 @@ from PyQt6.QtWidgets import (
     QTableView,
     QVBoxLayout,
     QTableWidget,
-    QSizePolicy
+    QSizePolicy,
+    QLabel,
 
 
 )
@@ -80,10 +81,13 @@ class SlitDisplay(QWidget):
         self.table.selectionModel().selectionChanged.connect(self.row_selected)
         # self.table.clicked.connect(self.row_selected)
 
-        layout = QVBoxLayout()
+        main_layout = QVBoxLayout()
+        title = QLabel("MASK GENERATION")
+        main_layout.addWidget(title)
+        main_layout.setSpacing(0)
 
-        layout.addWidget(self.table)
-        self.setLayout(layout)
+        main_layout.addWidget(self.table)
+        self.setLayout(main_layout)
         #self.table.setModel(self.table)
         
 

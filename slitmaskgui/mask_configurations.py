@@ -59,6 +59,7 @@ class MaskConfigurationsWidget(QWidget):
         )
 
         temp_data = [["saved","batmask"],["unsaved","spidermask"]]
+        title = QLabel("MASK CONFIGURATIONS")
 
         open_button = Button(80,30,"Open")
         copy_button = Button(80,30,"Copy")
@@ -67,7 +68,7 @@ class MaskConfigurationsWidget(QWidget):
         save_button = Button(120,30,"Save")
         save_all_button = Button(120,30,"Save All")
 
-        group_box = QGroupBox("MASK CONFIGURATIONS")
+        group_box = QGroupBox()
         
         table = QTableView()
         model = TableModel(temp_data)
@@ -91,12 +92,32 @@ class MaskConfigurationsWidget(QWidget):
         group_layout.addLayout(bot_hori_layout)
 
         group_box.setLayout(group_layout)
-
+        
+        main_layout.addWidget(title)
+        main_layout.setSpacing(0)
         main_layout.addWidget(group_box)
 
         self.setLayout(main_layout)
     def sizeHint(self):
         return QSize(40,120)
+    
+    def open_button_clicked(self):
+        pass
+
+    def copy_button_clicked(self):
+        pass
+
+    def close_button_clicked(self):
+        pass
+
+    def save_button_clicked(self):
+        pass
+
+    def save_all_button_clicked(self):
+        pass
+
+    def update_table(self):
+        pass
 
 
 

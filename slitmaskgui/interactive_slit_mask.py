@@ -131,10 +131,13 @@ class interactiveSlitMask(QWidget):
 
         self.scene.selectionChanged.connect(self.row_is_selected)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.view)
+        main_layout = QVBoxLayout()
+        title = QLabel("SLIT MASK VIEWER")
+        main_layout.addWidget(title)
+        main_layout.setSpacing(0)
+        main_layout.addWidget(self.view)
 
-        self.setLayout(layout)
+        self.setLayout(main_layout)
     
     def sizeHint(self):
         return QSize(520,550)
