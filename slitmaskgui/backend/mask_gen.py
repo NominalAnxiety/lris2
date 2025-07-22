@@ -15,8 +15,8 @@ class SlitMask:
 
     def calc_y_pos(self):
         #this will calculate the bar and x of every star and remove any that do not fit in position
-        for i in self.stars:
-            y = i["y_mm"]
+        for obj in self.stars:
+            y = obj["y_mm"]
             y_step = CSU_HEIGHT/TOTAL_BAR_PAIRS
 
             if y <= 0:
@@ -24,15 +24,20 @@ class SlitMask:
             elif y > 0: 
                 bar_id = TOTAL_BAR_PAIRS/2 -round(abs(y/y_step))
 
+            obj["bar id"] = int(bar_id)
 
-            i["bar id"] = bar_id
-
-        with open("json payload.txt",'w') as f:
-                for x in self.stars:
-                    f.write(str(x))
-                    f.write("\n")
 
         return self.stars
+    
+    def check_if_within(x,y):
+        if y > CSU_HEIGHT/2:
+            return "delete"
+        elif x > CSU_WIDTH/2:
+            return "delete"
+        return "save"
+    
+    def generate_pa(self):
+        pass
 
     def optimize(self):
         #optimizes list of stars with total highest priority. 

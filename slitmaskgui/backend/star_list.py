@@ -99,7 +99,7 @@ class stars_list:
         #imma just act rn like all the stars are in sequential order
         #I am going to have an optimize function that actually gets the right amount of stars with good positions
         #its going to also order them by bar
-        total_pixels = 520 #in the future I will pass this n from interactive slit mask so that will always be correct on resize
+        total_pixels = 252 #in the future I will pass this n from interactive slit mask so that will always be correct on resize
         self.payload = self.calc_mask()
         
         slit_dict = {}
@@ -107,7 +107,7 @@ class stars_list:
         for i,obj in enumerate(self.payload):
             if _max <= 0:
                 break
-            slit_dict[i] = (total_pixels/4+(obj["x_mm"]/(CSU_WIDTH))*total_pixels,obj["bar id"],obj["name"])
+            slit_dict[i] = (240+(obj["x_mm"]/(CSU_WIDTH))*total_pixels,obj["bar id"],obj["name"])
 
             _max -= 1
 

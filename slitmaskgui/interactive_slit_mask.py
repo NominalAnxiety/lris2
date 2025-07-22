@@ -28,7 +28,9 @@ from PyQt6.QtWidgets import (
 )
 
 #will have another thing that will dispaly all the stars in the sky at the time
-
+PLATE_SCALE = 0.7272 #(mm/arcsecond) on the sky
+CSU_HEIGHT = PLATE_SCALE*60*10 #height of csu in mm (height is 10 arcmin)
+CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
 
 class interactiveBars(QGraphicsRectItem):
     
@@ -54,6 +56,21 @@ class interactiveBars(QGraphicsRectItem):
             painter.setBrush(QBrush(Qt.GlobalColor.white))
             painter.setPen(QPen(QColor("black"), 1))
         painter.drawRect(self.rect())
+
+class FieldOfView(QGraphicsRectItem):
+    def __init__(self,image_height,x=0,y=0):
+        super().__init__()
+
+        self.height = image_height
+        self.ratio = CSU_WIDTH/CSU_HEIGHT #ratio of height to width 
+
+        self.setRect(x,y,self.height*self.ratio,self.height)
+
+        self.setPen(QPen(Qt.GlobalColor.darkGreen,4))
+        #self.setFlags(self.GraphicsItemFlag.ItemIsSelectable,False)
+        self.setOpacity(0.35)
+    def change_height(self):
+        pass
     
 
 class interactiveSlits(QGraphicsItemGroup):
@@ -92,6 +109,13 @@ class interactiveSlitMask(QWidget):
             QSizePolicy.Policy.MinimumExpanding,
             QSizePolicy.Policy.MinimumExpanding
         )
+        height = self.height() #this is the height of the widget
+        width = self.width()
+        total_height_of_bars = 7*72
+        xcenter_of_image = self.scene.width()/2
+        
+        print(f'height:{height} width:{width}') #This is the height of the widget not the scene
+        
 
         for i in range(72):
             temp_rect = interactiveBars(0,i*7+7,i)
@@ -99,6 +123,9 @@ class interactiveSlitMask(QWidget):
         for i in range(72):
             temp_slit = interactiveSlits(240,7*i+7)
             self.scene.addItem(temp_slit)
+        fov = FieldOfView(total_height_of_bars,x=xcenter_of_image/2,y=7)
+        self.scene.addItem(fov)
+
 
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -108,10 +135,7 @@ class interactiveSlitMask(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.view)
 
-
         self.setLayout(layout)
-
-        self.row_num = 0
     
     def sizeHint(self):
         return QSize(520,550)
@@ -150,9 +174,6 @@ class interactiveSlitMask(QWidget):
         for num, item in enumerate(slits_to_replace):
 
             try:
-                y_value = item.get_y_value()
-                print(y_value)
-                
                 self.scene.removeItem(item)
 
                 x_pos, bar_id, name = self.position[num]
