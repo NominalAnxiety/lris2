@@ -15,11 +15,13 @@ class TableModel(QAbstractTableModel):
 
         super().__init__()
         self._data = data
+        self.header = ["Name","Equinox","Magnitude","Ra","Dec","Center Distance"]
+        #MAGMA header is #,target name,priority,magnitude,ra,dec,center distance
     def headerData(self, section, orientation, role = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             #should add something about whether its vertical or horizontal
             if orientation == Qt.Orientation.Horizontal:
-                return ["Name","Ra","Dec","equinox"][section]
+                return self.header[section]
         return super().headerData(section, orientation, role)
 
 
@@ -33,7 +35,7 @@ class TableModel(QAbstractTableModel):
         return len(self._data)
 
     def columnCount(self, index):
-
+        
         return len(self._data[0])
     
 
@@ -51,6 +53,10 @@ class TargetDisplayWidget(QWidget):
         
         self.table.setModel(self.model)
 
+        self.table.verticalHeader().setDefaultSectionSize(0)
+        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
+        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+
         layout = QVBoxLayout()
 
         layout.addWidget(self.table)
@@ -58,9 +64,9 @@ class TargetDisplayWidget(QWidget):
         #self.table.setModel(self.table)
     @pyqtSlot(list,name="target list")
     def change_data(self,data):
-        self.data = data
-        self.model = TableModel(self.data)
-        self.table.setModel(self.model)
+        self.model.beginResetModel()
+        self.model._data = data
+        self.model.endResetModel()
 
 
 

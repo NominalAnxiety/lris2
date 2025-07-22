@@ -4,7 +4,7 @@ when you click the bar on the left then the image will display which row that is
 additionally It will also interact with the target list
 it will display where the slit is place and what stars will be shown
 """
-from PyQt6.QtCore import Qt, pyqtSlot, QLineF, QParallelAnimationGroup, QPropertyAnimation, QMetaProperty, QPointF
+from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QBrush, QPen, QPainter, QColor, QFont
 from PyQt6.QtWidgets import (
     QApplication,
@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QGraphicsLineItem,
     QGraphicsTextItem,
     QGraphicsItemGroup,
+    QSizePolicy
 
 
 )
@@ -30,7 +31,7 @@ from PyQt6.QtWidgets import (
 
 
 class interactiveBars(QGraphicsRectItem):
-    is_selected = pyqtSlot()
+    
     def __init__(self,x,y,this_id):
         super().__init__()
         #creates a rectangle that can cha
@@ -53,11 +54,10 @@ class interactiveBars(QGraphicsRectItem):
             painter.setBrush(QBrush(Qt.GlobalColor.white))
             painter.setPen(QPen(QColor("black"), 1))
         painter.drawRect(self.rect())
-            
-
-
+    
 
 class interactiveSlits(QGraphicsItemGroup):
+    
     def __init__(self,x,y,name="NONE"):
         super().__init__()
         #line length will be dependent on the amount of slits
@@ -81,17 +81,17 @@ class interactiveSlits(QGraphicsItemGroup):
     def get_y_value(self):
         return self.y_pos
 
-
-    
-#random line position maker
-        
-
 class interactiveSlitMask(QWidget):
+    row_selected = pyqtSignal(int,name="row selected")
     def __init__(self):
         super().__init__()
         #this will display the image
         #I think it would be cool to make the bars on the GUI move instead of just the slits moving
         self.scene = QGraphicsScene(0,0,480,520)
+        self.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.MinimumExpanding
+        )
 
         for i in range(72):
             temp_rect = interactiveBars(0,i*7+7,i)
@@ -103,30 +103,61 @@ class interactiveSlitMask(QWidget):
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
+        self.scene.selectionChanged.connect(self.row_is_selected)
+
         layout = QVBoxLayout()
         layout.addWidget(self.view)
 
 
         self.setLayout(layout)
 
-    @pyqtSlot(float,name="slit position")
+        self.row_num = 0
+    
+    def sizeHint(self):
+        return QSize(520,550)
+    
+    @pyqtSlot(int,name="row selected")
+    def select_corresponding_row(self,row):
+        
+        all_bars = [
+            item for item in reversed(self.scene.items())
+            if isinstance(item, QGraphicsRectItem)
+        ]
+        
+        all_bars[self.row_num].setSelected(False)
+        if 0 <= row <len(all_bars):
+            self.row_num = row
+            all_bars[self.row_num].setSelected(True)
+
+    
+    def row_is_selected(self):
+        try:
+            row_num = self.scene.selectedItems()[0].check_id()
+            self.row_selected.emit(row_num)
+        except:
+            pass
+
+    @pyqtSlot(dict,name="targets converted")
     def change_slit_and_star(self,pos):
         #will get it in the form of {1:(position,star_names),...}
         self.position = list(pos.values())
+        magic_number = 7
         new_items = []
         slits_to_replace = [
             item for item in reversed(self.scene.items())
             if isinstance(item, QGraphicsItemGroup)
         ]
         for num, item in enumerate(slits_to_replace):
-            if num >= len(self.position):
-                break  # Safety check: don't go out of bounds
 
             try:
                 y_value = item.get_y_value()
+                print(y_value)
+                
                 self.scene.removeItem(item)
-                x_pos, name = self.position[num]
-                new_item = interactiveSlits(x_pos, y_value, name)
+
+                x_pos, bar_id, name = self.position[num]
+                print(bar_id*magic_number)
+                new_item = interactiveSlits(x_pos, bar_id*magic_number+7, name) #7 is the margin at the top 
                 new_items.append(new_item)
             except Exception as e:
                 print(f"Error processing item {num}: {e}")
