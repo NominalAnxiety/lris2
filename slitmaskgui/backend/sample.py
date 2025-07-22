@@ -7,26 +7,9 @@ def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin=5, height_arcmi
     # Convert center to SkyCoord
     center = SkyCoord(ra_center, dec_center, unit=(u.deg, u.deg), frame='icrs')
 
-    # Convert arcsec to degrees
-    width_deg = (width_arcmin * u.arcmin).to(u.deg).value
-    height_deg = (height_arcmin * u.arcmin).to(u.deg).value
 
-    # Compute RA and Dec bounds
-    ra_min = center.ra.deg - width_deg / 2
-    ra_max = center.ra.deg + width_deg / 2
-    dec_min = center.dec.deg - height_deg / 2
-    dec_max = center.dec.deg + height_deg / 2
-
-    # ADQL box query
-    query = f"""
-    SELECT TOP {n_stars}
-        source_id, ra, dec, phot_g_mean_mag
-    FROM gaiadr3.gaia_source
-    WHERE ra BETWEEN {ra_min} AND {ra_max}
-      AND dec BETWEEN {dec_min} AND {dec_max}
-    ORDER BY phot_g_mean_mag ASC
-    """
-    job = Gaia.launch_job_async(query)
+    radius = height_arcmin
+    job = Gaia.cone_search_async(center, radius=radius*u.arcmin)
     results = job.get_results()
 
     # Write starlist
@@ -49,11 +32,3 @@ def query_gaia_starlist_rect(ra_center, dec_center, width_arcmin=5, height_arcmi
     print(f"Saved to   = {output_file}")
 
 # Example call — replace RA/Dec with your actual center
-query_gaia_starlist_rect(
-    ra_center=189.2363745,              # RA in degrees
-    dec_center=62.240944,               # Dec in degrees
-    width_arcmin=5,
-    height_arcmin=10,
-    n_stars=104,
-    output_file='gaia_starlist.txt'
-)

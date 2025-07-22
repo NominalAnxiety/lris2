@@ -7,7 +7,7 @@ PLATE_SCALE = 0.7272 #(mm/arcsecond) on the sky
 CSU_HEIGHT = PLATE_SCALE*60*10 #height of csu in mm (height is 10 arcmin)
 CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
 TOTAL_BAR_PAIRS = 72
-print(CSU_HEIGHT/TOTAL_BAR_PAIRS)
+
 
 class SlitMask:
     def __init__(self,stars):
@@ -19,9 +19,18 @@ class SlitMask:
             y = i["y_mm"]
             y_step = CSU_HEIGHT/TOTAL_BAR_PAIRS
 
-            bar_id = round(y/y_step)
+            if y <= 0:
+                bar_id = TOTAL_BAR_PAIRS/2+round(abs(y/y_step))
+            elif y > 0: 
+                bar_id = TOTAL_BAR_PAIRS/2 -round(abs(y/y_step))
+
 
             i["bar id"] = bar_id
+
+        with open("json payload.txt",'w') as f:
+                for x in self.stars:
+                    f.write(str(x))
+                    f.write("\n")
 
         return self.stars
 

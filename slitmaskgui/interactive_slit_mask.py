@@ -124,7 +124,7 @@ class interactiveSlitMask(QWidget):
             if isinstance(item, QGraphicsRectItem)
         ]
         
-        all_bars[self.row_num].setSelected(False)
+        self.scene.clearSelection()
         if 0 <= row <len(all_bars):
             self.row_num = row
             all_bars[self.row_num].setSelected(True)
@@ -156,7 +156,6 @@ class interactiveSlitMask(QWidget):
                 self.scene.removeItem(item)
 
                 x_pos, bar_id, name = self.position[num]
-                print(bar_id*magic_number)
                 new_item = interactiveSlits(x_pos, bar_id*magic_number+7, name) #7 is the margin at the top 
                 new_items.append(new_item)
             except Exception as e:

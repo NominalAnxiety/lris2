@@ -6,7 +6,6 @@ This will convert the Apparent RA and Dec to milimeters and give a position in m
 PLATE_SCALE = 0.7272 #(mm/arcsecond) on the sky
 CSU_HEIGHT = PLATE_SCALE*60*10 #height of csu in mm (height is 10 arcmin)
 CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
-print(f'height:{CSU_HEIGHT} width:{CSU_WIDTH}')
 
 
 from astropy.coordinates import SkyCoord, Angle
@@ -63,8 +62,15 @@ class stars_list:
             separation = self.center.separation(star)  # returns an angle
             obj["center distance"] = float(separation.to(u.arcmin).value)
 
-            delta_ra = (star.ra - self.center.ra).to(u.arcsec) #from center
+            delta_ra = (star.ra - self.center.ra).to(u.deg) #from center
             delta_dec = (star.dec - self.center.dec).to(u.arcsec) #from center
+            #this math does not work because it
+            if delta_ra.value > 180:  # If RA difference exceeds 180 degrees, wrap it
+                delta_ra -= 360 * u.deg
+            elif delta_ra.value < -180:
+                delta_ra += 360 * u.deg
+
+            delta_ra = delta_ra.to(u.arcsec)
 
             delta_ra_proj = delta_ra * np.cos(self.center.dec.radian) # Correct for spherical distortion
 
@@ -76,10 +82,7 @@ class stars_list:
             obj["x_mm"] = x_mm
             obj["y_mm"] = y_mm
 
-            with open("json payload.txt",'w') as f:
-                for x in self.payload:
-                    f.write(str(x))
-                    f.write("\n")
+            
 
             #ok this is not how you do this bc I will only take in x and just don't care about y right now (i'll care later)
     def calc_mask(self):
@@ -88,7 +91,7 @@ class stars_list:
 
     def send_target_list(self):
         i = self.payload
-        return_list = [[x["name"],x["equinox"],x["vmag"],x["ra"],x["dec"],x["center distance"]] for x in i]
+        return_list = [[x["name"],x["priority"],x["vmag"],x["ra"],x["dec"],x["center distance"]] for x in i]
         return return_list
 
     def send_interactive_slit_list(self):
@@ -114,9 +117,10 @@ class stars_list:
         #again, I am going to ignore the y position of the stars when placing them, I will worry about that later
         row_list =[]
         _max = 72
-        for i,obj in enumerate(self.payload):
+        for obj in self.payload:
             if _max <= 0:
                 break
-            row_list.append([i+1,obj["x_mm"],self.slit_width])
+            row_list.append([obj["bar id"],obj["x_mm"],self.slit_width])
             _max -= 1
-        return row_list
+        sorted_row_list = sorted(row_list, key=lambda x: x[0])
+        return sorted_row_list

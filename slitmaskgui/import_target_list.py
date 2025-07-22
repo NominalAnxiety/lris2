@@ -39,7 +39,7 @@ class MaskGenWidget(QWidget):
         import_target_list_button = QPushButton(text = "Import Target List")
         name_of_mask = QLineEdit()
         self.center_of_mask = QLineEdit("00 00 00.00 +00 00 00.00")
-        self.slit_width = QLineEdit(".7")
+        self.slit_width = QLineEdit("0.7")
         run_button = QPushButton(text="Run")
         name_of_mask.setAlignment(Qt.AlignmentFlag.AlignTop)
         import_target_list_button.setFixedSize(150,40)
@@ -103,8 +103,6 @@ class MaskGenWidget(QWidget):
 
 
         
-    def width(self):
-        pass
     def run_button(self):
         #this right now will generate a starlist depending on center to speed up testing
         path_to_file = "/Users/austinbowman/lris2/gaia_starlist.txt"
@@ -112,8 +110,8 @@ class MaskGenWidget(QWidget):
         center = re.match(r"(?P<Ra>\d{2} \d{2} \d{2}\.\d{2}(?:\.\d+)?) (?P<Dec>[\+|\-]\d{2} \d{2} \d{2}(?:\.\d+)?)",self.center_of_mask.text())
         ra = center.group("Ra")
         dec = center.group("Dec")
+        width = self.slit_width.text()
 
-        print("hi")
 
         query_gaia_starlist_rect(
             ra_center=ra,              # RA in degrees
@@ -126,7 +124,7 @@ class MaskGenWidget(QWidget):
 
         #--------------------------same thing from target list button clicked ----------
         target_list = TargetList(path_to_file)
-        slit_mask = stars_list(target_list.send_json(),ra,dec)
+        slit_mask = stars_list(target_list.send_json(),ra,dec,slit_width=width)
         interactive_slit_mask = slit_mask.send_interactive_slit_list()
 
         self.change_slit_image.emit(interactive_slit_mask)

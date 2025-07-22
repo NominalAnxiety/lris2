@@ -44,23 +44,28 @@ class TargetList:
                     name, ra, dec, equinox = match.group("star"), match.group("Ra"), match.group("Dec"), match.group("equinox")
                     #we actually don't care about equinox to display it but it might be a good thing to keep in the list
                     search = re.search(r"vmag=(?P<vmag>.+\.\S+)",line)
-                    vmag = search.group("vmag")
+                    priority_search = re.search(r"priority=(?P<priority>\S+)",line)
+
+                    vmag = search.group("vmag") if search != None else "N/A"
+                    priority = priority_search.group("priority") if priority_search != None else "0"
+
                     #next step is to search for magnitude vmag
                     #after that I have to call a function that will get the distance from center in ß
-                    if match and search:
-                        obj = {
+
+                    obj = {
                         "name": name,
                         "ra": ra,
                         "dec": dec,
                         "equinox": equinox,
                         "vmag": vmag,
-                        }
-                        self.objects.append(obj)
+                        "priority": priority
+                    }
+                    self.objects.append(obj)
 
                     #change this list do be a list of celestial objects that can be used later not just for displaying lists. 
-                        self.target_list.append([name,equinox,vmag,ra,dec])
+                    #self.target_list.append([name,priority,vmag,ra,dec])
     def send_json(self):
         return self.objects
         
-    def send_list(self):
-        return self.target_list
+    # def send_list(self):
+    #     return self.target_list
