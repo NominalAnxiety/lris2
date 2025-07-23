@@ -7,22 +7,18 @@ it will display where the slit is place and what stars will be shown
 from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QBrush, QPen, QPainter, QColor, QFont
 from PyQt6.QtWidgets import (
-    QApplication,
-    QMainWindow,
     QVBoxLayout,
     QHBoxLayout,
     QWidget,
     QLabel,
-    QGraphicsItem,
     QGraphicsView,
     QGraphicsScene,
-    QLayout,
     QGraphicsRectItem,
-    QStyleOptionGraphicsItem,
     QGraphicsLineItem,
     QGraphicsTextItem,
     QGraphicsItemGroup,
-    QSizePolicy
+    QSizePolicy,
+    QSizeGrip,
 
 
 )
@@ -105,6 +101,7 @@ class interactiveSlitMask(QWidget):
         #this will display the image
         #I think it would be cool to make the bars on the GUI move instead of just the slits moving
         self.scene = QGraphicsScene(0,0,480,520)
+
         self.setSizePolicy(
             QSizePolicy.Policy.MinimumExpanding,
             QSizePolicy.Policy.MinimumExpanding
@@ -114,7 +111,6 @@ class interactiveSlitMask(QWidget):
         total_height_of_bars = 7*72
         xcenter_of_image = self.scene.width()/2
         
-        print(f'height:{height} width:{width}') #This is the height of the widget not the scene
         
 
         for i in range(72):
@@ -129,19 +125,24 @@ class interactiveSlitMask(QWidget):
 
         self.view = QGraphicsView(self.scene)
         self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.view.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+
 
         self.scene.selectionChanged.connect(self.row_is_selected)
 
         main_layout = QVBoxLayout()
+
         title = QLabel("SLIT MASK VIEWER")
+
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0,0,0,0)
         main_layout.addWidget(self.view)
 
         self.setLayout(main_layout)
     
     def sizeHint(self):
-        return QSize(520,550)
+        return QSize(550,570)
     
     @pyqtSlot(int,name="row selected")
     def select_corresponding_row(self,row):
