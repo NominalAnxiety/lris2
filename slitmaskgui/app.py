@@ -112,7 +112,28 @@ class MainWindow(QMainWindow):
         splitterV1.addWidget(target_display)
         splitterV1.setOrientation(Qt.Orientation.Vertical)
         splitterV1.setContentsMargins(0,0,0,0)
+        layoutH1.setSpacing(0)
+        layoutH1.setContentsMargins(0,0,0,0)
+        widgetH1 = QWidget()
+        widgetH1.setLayout(layoutH1)
 
+        splitterV1.addWidget(widgetH1)
+        splitterV1.setCollapsible(0,False)
+        splitterV1.addWidget(target_display)
+        splitterV1.setOrientation(Qt.Orientation.Vertical)
+        splitterV1.setContentsMargins(0,0,0,0)
+
+        main_splitter.addWidget(splitterV1)
+        main_splitter.addWidget(splitterV2)
+        main_splitter.setContentsMargins(9,9,9,9)
+
+        self.setCentralWidget(main_splitter)
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                border: 8.5px solid {line_color};
+                background-color: lightgray;
+            }}
+        """)
         main_splitter.addWidget(splitterV1)
         main_splitter.addWidget(splitterV2)
         main_splitter.setContentsMargins(9,9,9,9)
