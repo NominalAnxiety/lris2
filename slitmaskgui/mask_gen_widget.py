@@ -93,7 +93,7 @@ class MaskGenWidget(QWidget):
 
         if text_file_path: 
             target_list = TargetList(text_file_path)
-            slit_mask = stars_list(target_list.send_json())
+            slit_mask = StarList(target_list.send_json())
             interactive_slit_mask = slit_mask.send_interactive_slit_list()
 
             self.change_slit_image.emit(interactive_slit_mask)
@@ -124,7 +124,7 @@ class MaskGenWidget(QWidget):
 
         #--------------------------same thing from target list button clicked ----------
         target_list = TargetList(path_to_file)
-        slit_mask = stars_list(target_list.send_json(),ra,dec,slit_width=width)
+        slit_mask = StarList(target_list.send_json(),ra,dec,slit_width=width)
         interactive_slit_mask = slit_mask.send_interactive_slit_list()
 
         self.change_slit_image.emit(interactive_slit_mask)
