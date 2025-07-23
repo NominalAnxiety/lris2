@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QSizePolicy,
     QLabel,
+    QHeaderView,
 
 
 )
@@ -22,7 +23,7 @@ class TableModel(QAbstractTableModel):
 
         super().__init__()
         self._data = data
-        self.headers = ["Row","Center(mm)","Width"]
+        self.headers = ["Row","Center","Width"]
     def headerData(self, section, orientation, role = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             #should add something about whether its vertical or horizontal
@@ -35,7 +36,13 @@ class TableModel(QAbstractTableModel):
 
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
-            return self._data[index.row()][index.column()]
+            value = self._data[index.row()][index.column()]
+            if index.column() == 1:
+                return f"{value:.1f}"
+            return value
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            return Qt.AlignmentFlag.AlignCenter
+        return None
 
     def rowCount(self, index):
         return len(self._data)
@@ -45,6 +52,22 @@ class TableModel(QAbstractTableModel):
     
     def row_num(self,row):
         return self._data[row][0]
+    
+class CustomTableView(QTableView):
+    def __init__(self):
+        super().__init__()
+        self.verticalHeader().hide()
+
+        # self.horizontalHeader().setSectionResizeMode(0,QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
+    def setResizeMode(self):
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+
+    def setModel(self, model):
+        super().setModel(model)
+        self.setResizeMode()
 
 
 width = .7
@@ -57,13 +80,13 @@ class SlitDisplay(QWidget):
         super().__init__()
 
         self.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding,
+            QSizePolicy.Policy.Maximum,
             QSizePolicy.Policy.MinimumExpanding
         )
 
         self.data = data #will look like [[row,center,width],...]
 
-        self.table = QTableView()
+        self.table = CustomTableView()
         
         self.model = TableModel(self.data)
         
@@ -82,9 +105,10 @@ class SlitDisplay(QWidget):
         # self.table.clicked.connect(self.row_selected)
 
         main_layout = QVBoxLayout()
-        title = QLabel("MASK GENERATION")
+        title = QLabel("ROW DISPLAY WIDGET")
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0,0,0,0)
 
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)

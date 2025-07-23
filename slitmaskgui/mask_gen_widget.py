@@ -33,8 +33,8 @@ class MaskGenWidget(QWidget):
         super().__init__()
 
         self.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding,
-            QSizePolicy.Policy.MinimumExpanding
+            QSizePolicy.Policy.Fixed,
+            QSizePolicy.Policy.Expanding
         )
         import_target_list_button = QPushButton(text = "Import Target List")
         name_of_mask = QLineEdit()
@@ -80,12 +80,13 @@ class MaskGenWidget(QWidget):
         title = QLabel("MASK GENERATION")
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0,0,0,0)
         main_layout.addWidget(group_box)
 
         self.setLayout(main_layout)
     
     def sizeHint(self):
-        return QSize(40,120)
+        return QSize(300,400)
         
 
     def starlist_file_button_clicked(self):
