@@ -33,7 +33,7 @@ class MaskGenWidget(QWidget):
         super().__init__()
 
         self.setSizePolicy(
-            QSizePolicy.Policy.Fixed,
+            QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Expanding
         )
         import_target_list_button = QPushButton(text = "Import Target List")

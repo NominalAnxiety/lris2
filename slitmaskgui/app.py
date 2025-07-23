@@ -78,6 +78,11 @@ class MainWindow(QMainWindow):
         splitterV1 = QSplitter()
         main_splitter = QSplitter()
         splitterV2 = QSplitter()
+        line_color = "#aeb5ad"
+        splitterV1.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
+        splitterV2.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
+        main_splitter.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
+
         
         
         slit_position_table.highlight_other.connect(interactive_slit_mask.select_corresponding_row)
@@ -113,8 +118,12 @@ class MainWindow(QMainWindow):
         main_splitter.setContentsMargins(9,9,9,9)
 
         self.setCentralWidget(main_splitter)
-
-
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                border: 8.5px solid {line_color};
+                background-color: lightgray;
+            }}
+        """)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
