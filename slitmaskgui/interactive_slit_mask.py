@@ -114,7 +114,6 @@ class interactiveSlitMask(QWidget):
         total_height_of_bars = 7*72
         xcenter_of_image = self.scene.width()/2
         
-        print(f'height:{height} width:{width}') #This is the height of the widget not the scene
         
 
         for i in range(72):

@@ -9,6 +9,7 @@ CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
 TOTAL_BAR_PAIRS = 72
 
 
+
 class SlitMask:
     def __init__(self,stars):
         self.stars = stars
@@ -29,12 +30,16 @@ class SlitMask:
 
         return self.stars
     
-    def check_if_within(x,y):
-        if y > CSU_HEIGHT/2:
-            return "delete"
-        elif x > CSU_WIDTH/2:
-            return "delete"
-        return "save"
+    # def check_if_within(x,y):
+    #     if y > CSU_HEIGHT/2:
+    #         return "delete"
+    #     elif x > CSU_WIDTH/2:
+    #         return "delete"
+    #     return "save"
+        #the delete and save is a temporary string that would tell another function to delete a star if it returned delete
+        #and save the star if it returned save
+        #this is just to make sure that all the stars that are given in the starlist are withing the boundaries
+        #I am going to change this to do it when calculating the y_pos (will check if within all PA)
     
     def generate_pa(self):
         pass

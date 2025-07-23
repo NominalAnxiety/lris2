@@ -45,7 +45,7 @@ I currently don't factor in PA because I don't know how to
 I also assume that RA and DEC are aligned with the x and y axis
 while that probably isn't right i'll just get something down for now
 """
-class stars_list:
+class StarList:
     def __init__(self,payload,RA,Dec,slit_width=0,pa=0):
         self.payload = payload
         self.center = SkyCoord(ra=RA,dec=Dec,unit=(u.hourangle,u.deg))
@@ -100,11 +100,11 @@ class stars_list:
         #I am going to have an optimize function that actually gets the right amount of stars with good positions
         #its going to also order them by bar
         total_pixels = 252 #in the future I will pass this n from interactive slit mask so that will always be correct on resize
-        self.payload = self.calc_mask()
+        self.interactive_mask = self.calc_mask()
         
         slit_dict = {}
         _max = 72
-        for i,obj in enumerate(self.payload):
+        for i,obj in enumerate(self.interactive_mask):
             if _max <= 0:
                 break
             slit_dict[i] = (240+(obj["x_mm"]/(CSU_WIDTH))*total_pixels,obj["bar id"],obj["name"])

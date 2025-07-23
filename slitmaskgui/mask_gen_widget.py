@@ -1,6 +1,6 @@
 
 from slitmaskgui.input_targets import TargetList
-from slitmaskgui.backend.star_list import stars_list
+from slitmaskgui.backend.star_list import StarList
 from slitmaskgui.backend.sample import query_gaia_starlist_rect
 import re
 from PyQt6.QtCore import QObject, pyqtSignal, Qt, QSize
