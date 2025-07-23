@@ -51,6 +51,8 @@ class CustomTableView(QTableView):
     def setResizeMode(self):
         for col in range(self.model().columnCount(None)):
             self.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
+    def sizePolicy(self):
+        return super().sizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
     def setModel(self, model):
         super().setModel(model)
