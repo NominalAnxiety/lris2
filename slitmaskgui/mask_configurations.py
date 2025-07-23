@@ -80,7 +80,7 @@ class MaskConfigurationsWidget(QWidget):
         super().__init__()
         
         self.setSizePolicy(
-            QSizePolicy.Policy.Maximum,
+            QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Preferred
         )
 

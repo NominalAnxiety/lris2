@@ -168,8 +168,8 @@ class interactiveSlitMask(QWidget):
         self.scene.selectionChanged.connect(self.row_is_selected)
 
         main_layout = QVBoxLayout()
-
-        title = QLabel("SLIT MASK VIEWER")
+        blank_space = " "*65
+        title = QLabel(f"{blank_space}SLIT MASK VIEWER")
 
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
