@@ -176,14 +176,10 @@ class MaskConfigurationsWidget(QWidget):
         if text_file_path: 
             print(f"File Path {text_file_path}")
             with open(text_file_path,"r") as f:
-                name = f.read()
-                self.model.beginResetModel()
-                self.model._data.append(["Saved",name])
-                row_num = self.model.get_num_rows() -1
-                self.table.selectRow(row_num)
+                info = f.read()
+                self.update_table(("opened",info)) #doesn't work right now
             #in the future this will take the mask config file and take the name from that file and display it
             #it will also auto select itself and display the mask configuration on the interactive slit mask
-        print("open button clicked")
 
     def save_button_clicked(self,item):
         #This will update the mask configuration file to fit the changed mask
@@ -200,6 +196,7 @@ class MaskConfigurationsWidget(QWidget):
             self.model.beginResetModel()
             self.model.removeRow(row_num)
             self.model.endResetModel()
+            
 
     def export_button_clicked(self): #should probably change to export to avoid confusion with saved/unsaved which is actually updated/notupdated
         #this will save the current file selected in the table
@@ -217,7 +214,6 @@ class MaskConfigurationsWidget(QWidget):
                         line = f'{i} {item}\n'
                         f.write(line)
         
-        
 
     def export_all_button_clicked(self):
         #this will save all unsaved files
@@ -225,6 +221,7 @@ class MaskConfigurationsWidget(QWidget):
 
     pyqtSlot()
     def update_table(self,info=None):
+        #the first if statement is for opening a mask file and making a mask in the gui which will be automatically added
         if info is not None: #info for now will be a list [name,json]
             name, mask_config = info[0], info[1]
             self.model.beginResetModel()
@@ -233,11 +230,8 @@ class MaskConfigurationsWidget(QWidget):
             row_num = self.model.get_num_rows() -1
             self.table.selectRow(row_num)
             self.row_to_config_dict.update({row_num: mask_config})
-        if info is type(int):
-            self.model.beginResetModel()
-            self.model._data
-            self.model.endResetModel()
-
+        if info is type(int): #this is for deleting a row
+            pass 
 
         else:
             print("will change thing to saved")
