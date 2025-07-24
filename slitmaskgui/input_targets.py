@@ -32,7 +32,6 @@ class TargetList:
     def __init__(self,file_path):
 
         self.file_path = file_path
-        self.target_list = []
         self.objects = []
         self._parse_file()
         
@@ -61,6 +60,7 @@ class TargetList:
                         "priority": priority
                     }
                     self.objects.append(obj)
+        self.objects = json.dumps(self.objects)
 
                     #change this list do be a list of celestial objects that can be used later not just for displaying lists. 
                     #self.target_list.append([name,priority,vmag,ra,dec])

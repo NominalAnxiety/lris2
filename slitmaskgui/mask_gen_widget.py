@@ -27,7 +27,7 @@ from PyQt6.QtWidgets import (
 
 class MaskGenWidget(QWidget):
     change_data = pyqtSignal(list)
-    change_slit_image = pyqtSignal(dict)
+    change_slit_image = pyqtSignal(str)
     change_row_widget = pyqtSignal(list)
     def __init__(self):
         super().__init__()

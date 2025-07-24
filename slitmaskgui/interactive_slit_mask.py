@@ -6,6 +6,7 @@ it will display where the slit is place and what stars will be shown
 """
 from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal, QSize
 from PyQt6.QtGui import QBrush, QPen, QPainter, QColor, QFont, QTransform
+import json
 from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
@@ -133,18 +134,15 @@ class interactiveSlitMask(QWidget):
         super().__init__()
 
         #--------------------definitions-----------------------
-        scene_width = 480
-        scene_height = 520
+        scene_width, scene_height = 480, 520
         self.scene = QGraphicsScene(0,0,scene_width,scene_height)
-
+        initial_bar_width, initial_bar_length = 7, 480
         total_height_of_bars = 7*72
         xcenter_of_image = self.scene.width()/2
-
         blank_space = " "*65
+
         title = QLabel(f"{blank_space}SLIT MASK VIEWER")
         
-        initial_bar_width = 7
-        initial_bar_length = 480
 
         for i in range(72):
             temp_rect = interactiveBars(0,i*7+7,this_id=i,bar_width=initial_bar_width,bar_length=initial_bar_length)
@@ -195,30 +193,27 @@ class interactiveSlitMask(QWidget):
         except:
             pass
 
-    @pyqtSlot(dict,name="targets converted")
+    @pyqtSlot(str,name="targets converted")
     def change_slit_and_star(self,pos):
         #will get it in the form of {1:(position,star_names),...}
-        self.position = list(pos.values())
+        position_dict = json.loads(pos)
+        self.position = list(position_dict.values())
         magic_number = 7
-        new_items = []
         slits_to_replace = [
             item for item in reversed(self.scene.items())
             if isinstance(item, QGraphicsItemGroup)
         ]
         for num, item in enumerate(slits_to_replace):
-
             try:
                 self.scene.removeItem(item)
 
                 x_pos, bar_id, name = self.position[num]
-                new_item = interactiveSlits(x_pos, bar_id*magic_number+7, name) #7 is the margin at the top 
-                new_items.append(new_item)
+                new_item = interactiveSlits(x_pos, bar_id*magic_number+7, name) #7 is the margin at the top
+                self.scene.addItem(new_item)
+
             except Exception as e:
                 print(f"Error processing item {num}: {e}")
-                continue
-        #item_list.reverse()
-        for item in new_items:
-            self.scene.addItem(item)
+
         self.view = QGraphicsScene(self.scene)
 
 

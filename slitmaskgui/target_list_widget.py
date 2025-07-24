@@ -30,6 +30,7 @@ class TableModel(QAbstractTableModel):
 
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
+
             return self._data[index.row()][index.column()]
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return Qt.AlignmentFlag.AlignCenter

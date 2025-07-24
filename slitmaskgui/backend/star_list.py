@@ -45,9 +45,10 @@ I currently don't factor in PA because I don't know how to
 I also assume that RA and DEC are aligned with the x and y axis
 while that probably isn't right i'll just get something down for now
 """
+import json
 class StarList:
     def __init__(self,payload,RA,Dec,slit_width=0,pa=0):
-        self.payload = payload
+        self.payload = json.loads(payload)
         self.center = SkyCoord(ra=RA,dec=Dec,unit=(u.hourangle,u.deg))
         self.slit_width = slit_width
         self.pa = pa
@@ -71,28 +72,23 @@ class StarList:
                 delta_ra += 360 * u.deg
 
             delta_ra = delta_ra.to(u.arcsec)
-
             delta_ra_proj = delta_ra * np.cos(self.center.dec.radian) # Correct for spherical distortion
 
             # Convert to mm
             x_mm = float(delta_ra_proj.value * PLATE_SCALE)
             y_mm = float(delta_dec.value * PLATE_SCALE)
 
-            # Save or print results
             obj["x_mm"] = x_mm
             obj["y_mm"] = y_mm
 
             
-
             #ok this is not how you do this bc I will only take in x and just don't care about y right now (i'll care later)
     def calc_mask(self):
         slit_mask = SlitMask(self.payload)
         return slit_mask.calc_y_pos()
 
     def send_target_list(self):
-        i = self.payload
-        return_list = [[x["name"],x["priority"],x["vmag"],x["ra"],x["dec"],x["center distance"]] for x in i]
-        return return_list
+        return [[x["name"],x["priority"],x["vmag"],x["ra"],x["dec"],x["center distance"]] for x in self.payload]
 
     def send_interactive_slit_list(self):
         #have to convert it to dict {bar_num:(position,star_name)}
@@ -107,11 +103,11 @@ class StarList:
         for i,obj in enumerate(self.interactive_mask):
             if _max <= 0:
                 break
-            slit_dict[i] = (240+(obj["x_mm"]/(CSU_WIDTH))*total_pixels,obj["bar id"],obj["name"])
+            slit_dict[i] = (240+(obj["x_mm"]/(CSU_WIDTH))*total_pixels,obj["bar_id"],obj["name"])
 
             _max -= 1
 
-        return slit_dict
+        return json.dumps(slit_dict)
     
     def send_row_widget_list(self):
         #again, I am going to ignore the y position of the stars when placing them, I will worry about that later
@@ -120,7 +116,7 @@ class StarList:
         for obj in self.payload:
             if _max <= 0:
                 break
-            row_list.append([obj["bar id"],obj["x_mm"],self.slit_width])
+            row_list.append([obj["bar_id"],obj["x_mm"],self.slit_width])
             _max -= 1
         sorted_row_list = sorted(row_list, key=lambda x: x[0])
         return sorted_row_list
