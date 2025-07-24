@@ -21,7 +21,7 @@ class TableModel(QAbstractTableModel):
 
         super().__init__()
         self._data = data
-        self.headers = ["Row","Center","Width"]
+        self.headers = ["Row","Center(mm)","Width"]
     def headerData(self, section, orientation, role = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             #should add something about whether its vertical or horizontal
@@ -32,19 +32,18 @@ class TableModel(QAbstractTableModel):
                 return None
         return super().headerData(section, orientation, role)
 
-
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
-
             return self._data[index.row()][index.column()]
 
     def rowCount(self, index):
-
         return len(self._data)
 
     def columnCount(self, index):
-
         return len(self._data[0])
+    
+    def row_num(self,row):
+        return self._data[row][0]
 
 
 width = .7
@@ -79,6 +78,7 @@ class SlitDisplay(QWidget):
 
 
         self.table.selectionModel().selectionChanged.connect(self.row_selected)
+        # self.table.clicked.connect(self.row_selected)
 
         layout = QVBoxLayout()
 
@@ -95,15 +95,15 @@ class SlitDisplay(QWidget):
         self.model.beginResetModel()
         self.model._data = data
         self.model.endResetModel()
-        # self.data = data
-        # self.model = TableModel(self.data)
-        # self.table.setModel(self.model)
+
     
     def row_selected(self):
         #I have to emit a list of x,y positions [[x,y],...]
         #if there is no star in a row then we have to make it so that there is not change in position
         #I probably need to find the row
         selected_row = self.table.selectionModel().currentIndex().row()
+        # item = int(self.model.row_num(selected_row))
+        # if selected_row in (self.data, lambda x:x[0]):
         self.highlight_other.emit(selected_row)
 
     @pyqtSlot(int,name="other row selected")

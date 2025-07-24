@@ -16,7 +16,7 @@ just take that and display that instead of through my awful input targets functi
 
 #just importing everything for now. When on the final stages I will not import what I don't need
 from slitmaskgui.target_list_widget import TargetDisplayWidget
-from slitmaskgui.import_target_list import MaskGenWidget
+from slitmaskgui.mask_gen_widget import MaskGenWidget
 from slitmaskgui.menu_bar import MenuBar
 from slitmaskgui.interactive_slit_mask import interactiveSlitMask
 from slitmaskgui.mask_configurations import MaskConfigurationsWidget
@@ -60,8 +60,8 @@ class MainWindow(QMainWindow):
         layoutV2 = QVBoxLayout() #right side
 
         mask_config_widget = MaskConfigurationsWidget()
-        #mask_config_widget.setMaximumHeight(200)
-        import_target_list_display = MaskGenWidget()
+        mask_config_widget.setMaximumHeight(200)
+        mask_gen_widget = MaskGenWidget()
         sample_data = [[0,1,1,1],[1,0,1,1]]
 
         target_display = TargetDisplayWidget(sample_data)
@@ -77,12 +77,12 @@ class MainWindow(QMainWindow):
         slit_position_table.highlight_other.connect(interactive_slit_mask.select_corresponding_row)
         interactive_slit_mask.row_selected.connect(slit_position_table.select_corresponding)
 
-        import_target_list_display.change_data.connect(target_display.change_data)
-        import_target_list_display.change_slit_image.connect(interactive_slit_mask.change_slit_and_star)
-        import_target_list_display.change_row_widget.connect(slit_position_table.change_data)
+        mask_gen_widget.change_data.connect(target_display.change_data)
+        mask_gen_widget.change_slit_image.connect(interactive_slit_mask.change_slit_and_star)
+        mask_gen_widget.change_row_widget.connect(slit_position_table.change_data)
 
         layoutV2.addWidget(mask_config_widget)#temp_widget1
-        layoutV2.addWidget(import_target_list_display)
+        layoutV2.addWidget(mask_gen_widget)
         layoutV2.setSpacing(1)
 
         layoutH1.addWidget(slit_position_table)#temp_widget2)
