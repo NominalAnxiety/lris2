@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         layoutV2 = QVBoxLayout() #right side
 
         mask_config_widget = MaskConfigurationsWidget()
-        #mask_config_widget.setMaximumHeight(200)
+        mask_config_widget.setMaximumHeight(200)
         mask_gen_widget = MaskGenWidget()
         sample_data = [[0,1,1,1],[1,0,1,1]]
 
