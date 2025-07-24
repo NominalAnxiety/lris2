@@ -58,40 +58,34 @@ class MainWindow(QMainWindow):
         self.setGeometry(100,100,1000,700)
         self.setMenuBar(MenuBar()) #sets the menu bar
 
-        main_layout = QHBoxLayout() #contains layout V1 and layout V2
-        layoutH1 = QHBoxLayout() #Contains slit position table and interactive slit mask
-        layoutV1 = QVBoxLayout() #contains layoutH1 and the target list display below
-        layoutV2 = QVBoxLayout() #contains mask config widget and mask gen widget
-
+        #----------------------------definitions----------------------------
         mask_config_widget = MaskConfigurationsWidget()
-        #mask_config_widget.setMaximumHeight(200)
         mask_gen_widget = MaskGenWidget()
-        
-
         target_display = TargetDisplayWidget()
         interactive_slit_mask = interactiveSlitMask()
-        interactive_slit_mask.setContentsMargins(0,0,0,0)
-
         slit_position_table = SlitDisplay()
+
+        #--------------------------preliminary cosmetics-------------------
+        interactive_slit_mask.setContentsMargins(0,0,0,0)
         slit_position_table.setContentsMargins(0,0,0,0)
 
-        splitterV1 = QSplitter()
-        main_splitter = QSplitter()
-        splitterV2 = QSplitter()
-        line_color = "#aeb5ad"
-        splitterV1.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
-        splitterV2.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
-        main_splitter.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
-
-        
-        
+        #--------------------------------connections---------------------
         slit_position_table.highlight_other.connect(interactive_slit_mask.select_corresponding_row)
         interactive_slit_mask.row_selected.connect(slit_position_table.select_corresponding)
-
         mask_gen_widget.change_data.connect(target_display.change_data)
         mask_gen_widget.change_slit_image.connect(interactive_slit_mask.change_slit_and_star)
         mask_gen_widget.change_row_widget.connect(slit_position_table.change_data)
+        mask_gen_widget.send_initial_mask_config.connect(mask_config_widget.update_table)
 
+        #-------------------------------cosmetic configuration------------------
+        layoutH1 = QHBoxLayout() #Contains slit position table and interactive slit mask
+        splitterV1 = QSplitter()
+        main_splitter = QSplitter()
+        splitterV2 = QSplitter()
+        line_color = "#aeb5ad" 
+        splitterV1.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
+        splitterV2.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
+        main_splitter.setStyleSheet(f"QSplitter::handle {{background-color: {line_color};}}")
 
         splitterV2.addWidget(mask_config_widget)
         splitterV2.addWidget(mask_gen_widget)
@@ -123,17 +117,7 @@ class MainWindow(QMainWindow):
                 background-color: lightgray;
             }}
         """)
-        main_splitter.addWidget(splitterV1)
-        main_splitter.addWidget(splitterV2)
-        main_splitter.setContentsMargins(9,9,9,9)
-
-        self.setCentralWidget(main_splitter)
-        self.setStyleSheet(f"""
-            QMainWindow {{
-                border: 8.5px solid {line_color};
-                background-color: lightgray;
-            }}
-        """)
+        #--------------------------------------------------------
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -131,16 +131,11 @@ class interactiveSlitMask(QWidget):
     row_selected = pyqtSignal(int,name="row selected")
     def __init__(self):
         super().__init__()
-        #this will display the image
-        #I think it would be cool to make the bars on the GUI move instead of just the slits moving
+
         scene_width = 480
         scene_height = 520
         self.scene = QGraphicsScene(0,0,scene_width,scene_height)
 
-        # self.setSizePolicy(
-        #     QSizePolicy.Policy.MinimumExpanding,
-        #     QSizePolicy.Policy.MinimumExpanding
-        # )
         height = self.height() #this is the height of the widget
         width = self.width()
         total_height_of_bars = 7*72
@@ -159,11 +154,6 @@ class interactiveSlitMask(QWidget):
         self.scene.addItem(fov)
 
         self.view = CustomGraphicsView(self.scene)
-        # self.view = QGraphicsView(self.scene)
-        # self.view.setRenderHint(QPainter.RenderHint.Antialiasing)
-        # self.view.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
-
-
 
         self.scene.selectionChanged.connect(self.row_is_selected)
 

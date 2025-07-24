@@ -4,7 +4,8 @@ A button at the bottom to save the mask, and one right next to it to save all th
 3 buttons on the top: open, copy, close
 """
 
-from PyQt6.QtCore import Qt, QAbstractTableModel,QSize
+import json
+from PyQt6.QtCore import Qt, QAbstractTableModel,QSize, QModelIndex, pyqtSlot
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -17,6 +18,8 @@ from PyQt6.QtWidgets import (
     QTableView,
     QSizePolicy,
     QHeaderView,
+    QFileDialog,
+
 )
 
 class Button(QPushButton):
@@ -52,9 +55,12 @@ class TableModel(QAbstractTableModel):
             return Qt.AlignmentFlag.AlignCenter
         return None
 
+    def get_num_rows(self):
+        return len(self._data)
+    def get_row_num(self,index):
+        return index[0].row()
     def rowCount(self, index):
         return len(self._data)
-
     def columnCount(self, index):
         return 2
     
@@ -62,15 +68,21 @@ class CustomTableView(QTableView):
     def __init__(self):
         super().__init__()
         self.verticalHeader().hide()
+        self.verticalHeader().setDefaultSectionSize(0)
+        #self.setEditTriggers(QTableView.EditTrigger.DoubleClicked)
 
-        # self.horizontalHeader().setSectionResizeMode(0,QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+        
+
     def setResizeMode(self):
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+
     def setModel(self, model):
         super().setModel(model)
         self.setResizeMode()
+
 
 
 
@@ -84,44 +96,52 @@ class MaskConfigurationsWidget(QWidget):
             QSizePolicy.Policy.Preferred
         )
 
+        #------------definitions--------------
         title = QLabel("MASK CONFIGURATIONS")
 
         open_button = Button(80,30,"Open")
-        copy_button = Button(80,30,"Copy")
+        save_button = Button(80,30,"Save")
         close_button = Button(80,30,"Close")
 
-        save_button = Button(120,30,"Save")
-        save_all_button = Button(120,30,"Save All")
+        export_button = Button(120,30,"Export")
+        export_all_button = Button(120,30,"Export All")
 
+        self.table = CustomTableView()
+        self.model = TableModel()
+        self.table.setModel(self.model)
+
+        self.row_to_config_dict = {}
+
+        #------------------------button connections-----------------
+        open_button.clicked.connect(self.open_button_clicked)
+        save_button.clicked.connect(self.save_button_clicked)
+        close_button.clicked.connect(self.close_button_clicked)
+        export_button.clicked.connect(self.export_button_clicked)
+        export_all_button.clicked.connect(self.export_all_button_clicked)
+
+        #-------------------cosmetic configuration-------------------
         group_box = QGroupBox()
-        
-        table = CustomTableView()
-        model = TableModel()
-        table.setModel(model)     
-        # table.setBaseSize(100,100)
-
         main_layout = QVBoxLayout()
         group_layout = QVBoxLayout()
         top_hori_layout = QHBoxLayout()
         bot_hori_layout = QHBoxLayout()
 
         top_hori_layout.addWidget(open_button)
-        top_hori_layout.addWidget(copy_button)
+        top_hori_layout.addWidget(save_button)
         top_hori_layout.addWidget(close_button)
         top_hori_layout.setSpacing(0)
 
-        bot_hori_layout.addWidget(save_button)
-        bot_hori_layout.addWidget(save_all_button)
+        bot_hori_layout.addWidget(export_button)
+        bot_hori_layout.addWidget(export_all_button)
         bot_hori_layout.setSpacing(0)
 
         group_layout.addLayout(top_hori_layout)
-        group_layout.addWidget(table)
+        group_layout.addWidget(self.table)
         group_layout.addLayout(bot_hori_layout)
         group_layout.setSpacing(0)
         group_layout.setContentsMargins(0,0,0,0)
 
         group_box.setLayout(group_layout)
-        #group_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         group_box.setContentsMargins(2,0,2,0)
         
         main_layout.addWidget(title)
@@ -130,27 +150,78 @@ class MaskConfigurationsWidget(QWidget):
         main_layout.setContentsMargins(0,0,0,0)
 
         self.setLayout(main_layout)
-        # self.setContentsMargins(0,0,0,0)
+        #--------------------------end of cosmetic configuration------------------
 
     def sizeHint(self):
         return QSize(300,60)
     
     def open_button_clicked(self):
+        text_file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select a File",
+            "",
+            "All files (*)" #will need to make sure it is a specific file
+        )
+        #update this with the row to json dict thing
+        if text_file_path: 
+            print(f"File Path {text_file_path}")
+            with open(text_file_path,"r") as f:
+                name = f.read()
+                self.model.beginResetModel()
+                self.model._data.append(["Saved",name])
+                row_num = self.model.get_num_rows() -1
+                self.table.selectRow(row_num)
+            #in the future this will take the mask config file and take the name from that file and display it
+            #it will also auto select itself and display the mask configuration on the interactive slit mask
+        print("open button clicked")
+
+    def save_button_clicked(self,item):
+        #This will update the mask configuration file to fit the changed mask
+        #can't make any edits to the data currently so i'll just wait to do this one
+        print("save button clicked")
         pass
 
-    def copy_button_clicked(self):
+    def close_button_clicked(self,item):
+        #this will delete the item from the list and the information that goes along with it
+        #get selected item
+        print("close button clicked")
         pass
 
-    def close_button_clicked(self):
+    def export_button_clicked(self): #should probably change to export to avoid confusion with saved/unsaved which is actually updated/notupdated
+        #this will save the current file selected in the table
+        try:
+            row_num = self.model.get_row_num(self.table.selectedIndexes()) #this gets the row num
+        except:
+            print("there are no rows")
+        with open("mask_config.txt","w") as f:
+            for i,item in self.row_to_config_dict[row_num].items():
+                line = f'{i} {item}\n'
+                f.write(line)
+        
+        
+
+    def export_all_button_clicked(self):
+        #this will save all unsaved files
+        print("export all button clicked")
         pass
 
-    def save_button_clicked(self):
-        pass
+    pyqtSlot()
+    def update_table(self,info=None):
+        if info: #info for now will be a list [name,json]
+            name, mask_config = info[0], info[1]
+            self.model.beginResetModel()
+            self.model._data.append(["Saved",name])
+            self.model.endResetModel()
+            row_num = self.model.get_num_rows() -1
+            self.table.selectRow(row_num)
+            self.row_to_config_dict.update({row_num: mask_config})
 
-    def save_all_button_clicked(self):
-        pass
+        else:
+            print("will change thing to saved")
+        # when a mask configuration is run, this will save the data in a list
 
-    def update_table(self):
+    def selected(self,item):
+        #will update the slit mask depending on which item is selected
         pass
 
 

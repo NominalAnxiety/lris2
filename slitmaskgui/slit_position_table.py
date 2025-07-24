@@ -20,7 +20,6 @@ from PyQt6.QtWidgets import (
 
 class TableModel(QAbstractTableModel):
     def __init__(self, data=[]):
-
         super().__init__()
         self._data = data
         self.headers = ["Row","Center","Width"]
@@ -56,18 +55,23 @@ class TableModel(QAbstractTableModel):
 class CustomTableView(QTableView):
     def __init__(self):
         super().__init__()
+
         self.verticalHeader().hide()
+        self.verticalHeader().setDefaultSectionSize(0)
 
-        # self.horizontalHeader().setSectionResizeMode(0,QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
-    def setResizeMode(self):
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
     def setModel(self, model):
         super().setModel(model)
         self.setResizeMode()
+
+    def setResizeMode(self):
+        for i in range(3):
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeMode.ResizeToContents)
+
+    def event(self, event):
+        return super().event(event)
+        #what I will do in the future is make it so that if even == doublemousepress event that you can edit the data in the cell
 
 
 width = .7
@@ -84,26 +88,16 @@ class SlitDisplay(QWidget):
             QSizePolicy.Policy.MinimumExpanding
         )
 
-        self.data = data #will look like [[row,center,width],...]
-
+        #----------------------definitions------------------
+        self.data = data #will look like [[row,center,width],...
         self.table = CustomTableView()
-        
         self.model = TableModel(self.data)
-        
         self.table.setModel(self.model)
         
-        self.table.setColumnWidth(0, 32) #will avoid magic numbers here
-        self.table.setColumnWidth(1,90) #will probably do QsizePolicy
-        self.table.setColumnWidth(2,50)
-        
-        self.table.verticalHeader().setDefaultSectionSize(0)
-        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
-        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection) #this makes it so you can only select one row at a time
-
-
+        #-----------------------connections-----------------
         self.table.selectionModel().selectionChanged.connect(self.row_selected)
-        # self.table.clicked.connect(self.row_selected)
 
+        #-------------------cosmetic configuration -------------
         main_layout = QVBoxLayout()
         title = QLabel("ROW DISPLAY WIDGET")
         main_layout.addWidget(title)
@@ -112,7 +106,6 @@ class SlitDisplay(QWidget):
 
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)
-        #self.table.setModel(self.table)
         
 
     def sizeHint(self):
