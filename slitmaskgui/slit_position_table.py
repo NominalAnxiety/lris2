@@ -57,14 +57,16 @@ class CustomTableView(QTableView):
     def __init__(self):
         super().__init__()
         self.verticalHeader().hide()
+        self.verticalHeader().setDefaultSectionSize(0)
 
-        # self.horizontalHeader().setSectionResizeMode(0,QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+
     def setResizeMode(self):
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
         self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-
+    
     def setModel(self, model):
         super().setModel(model)
         self.setResizeMode()
@@ -84,36 +86,26 @@ class SlitDisplay(QWidget):
             QSizePolicy.Policy.MinimumExpanding
         )
 
+        #---------------------------definitions----------------------
         self.data = data #will look like [[row,center,width],...]
-
         self.table = CustomTableView()
-        
         self.model = TableModel(self.data)
-        
         self.table.setModel(self.model)
-        
-        self.table.setColumnWidth(0, 32) #will avoid magic numbers here
-        self.table.setColumnWidth(1,90) #will probably do QsizePolicy
-        self.table.setColumnWidth(2,50)
-        
-        self.table.verticalHeader().setDefaultSectionSize(0)
-        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
-        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection) #this makes it so you can only select one row at a time
+        title = QLabel("ROW DISPLAY WIDGET")
 
-
+        #--------------------------connections-----------------------
         self.table.selectionModel().selectionChanged.connect(self.row_selected)
         # self.table.clicked.connect(self.row_selected)
 
+        #----------------------------layout----------------------
         main_layout = QVBoxLayout()
-        title = QLabel("ROW DISPLAY WIDGET")
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0,0,0,0)
 
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)
-        #self.table.setModel(self.table)
-        
+        #------------------------------------------------------        
 
     def sizeHint(self):
         return QSize(40,120)

@@ -84,6 +84,7 @@ class MaskConfigurationsWidget(QWidget):
             QSizePolicy.Policy.Preferred
         )
 
+        #--------------------------------Definitions---------------------
         title = QLabel("MASK CONFIGURATIONS")
 
         open_button = Button(80,30,"Open")
@@ -98,8 +99,9 @@ class MaskConfigurationsWidget(QWidget):
         table = CustomTableView()
         model = TableModel()
         table.setModel(model)     
-        # table.setBaseSize(100,100)
 
+
+        #-------------------------------layout--------------------------
         main_layout = QVBoxLayout()
         group_layout = QVBoxLayout()
         top_hori_layout = QHBoxLayout()
@@ -121,7 +123,6 @@ class MaskConfigurationsWidget(QWidget):
         group_layout.setContentsMargins(0,0,0,0)
 
         group_box.setLayout(group_layout)
-        #group_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         group_box.setContentsMargins(2,0,2,0)
         
         main_layout.addWidget(title)
@@ -130,8 +131,7 @@ class MaskConfigurationsWidget(QWidget):
         main_layout.setContentsMargins(0,0,0,0)
 
         self.setLayout(main_layout)
-        # self.setContentsMargins(0,0,0,0)
-
+        #------------------------------------------------
     def sizeHint(self):
         return QSize(300,60)
     
