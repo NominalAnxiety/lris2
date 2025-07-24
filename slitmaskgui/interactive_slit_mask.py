@@ -132,42 +132,44 @@ class interactiveSlitMask(QWidget):
     def __init__(self):
         super().__init__()
 
+        #--------------------definitions-----------------------
         scene_width = 480
         scene_height = 520
         self.scene = QGraphicsScene(0,0,scene_width,scene_height)
 
-        height = self.height() #this is the height of the widget
-        width = self.width()
         total_height_of_bars = 7*72
         xcenter_of_image = self.scene.width()/2
+
+        blank_space = " "*65
+        title = QLabel(f"{blank_space}SLIT MASK VIEWER")
         
         initial_bar_width = 7
         initial_bar_length = 480
 
         for i in range(72):
             temp_rect = interactiveBars(0,i*7+7,this_id=i,bar_width=initial_bar_width,bar_length=initial_bar_length)
-            self.scene.addItem(temp_rect)
-        for i in range(72):
             temp_slit = interactiveSlits(scene_width/2,7*i+7)
+            self.scene.addItem(temp_rect)
             self.scene.addItem(temp_slit)
+
         fov = FieldOfView(total_height_of_bars,x=xcenter_of_image/2,y=7)
         self.scene.addItem(fov)
 
         self.view = CustomGraphicsView(self.scene)
-
+        #-------------------connections-----------------------
         self.scene.selectionChanged.connect(self.row_is_selected)
 
-        main_layout = QVBoxLayout()
-        blank_space = " "*65
-        title = QLabel(f"{blank_space}SLIT MASK VIEWER")
 
+        #------------------------layout-----------------------
+        main_layout = QVBoxLayout()
+        
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0,0,0,0)
         main_layout.addWidget(self.view)
 
         self.setLayout(main_layout)
-    
+        #-------------------------------------------
     def sizeHint(self):
         return QSize(650,620)
     

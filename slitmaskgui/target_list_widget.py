@@ -47,6 +47,10 @@ class CustomTableView(QTableView):
         super().__init__()
         self.verticalHeader().show()
         self.horizontalHeader().show()
+        self.verticalHeader().setDefaultSectionSize(0)
+
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
 
     def setResizeMode(self):
         for col in range(self.model().columnCount(None)):
@@ -67,27 +71,24 @@ class TargetDisplayWidget(QWidget):
             QSizePolicy.Policy.Preferred
         )
 
+        #---------------------------definitions------------------------
         self.data = data
-
         self.table = CustomTableView()
-        
         self.model = TableModel(self.data)
-        
         self.table.setModel(self.model)
-
-        self.table.verticalHeader().setDefaultSectionSize(0)
-        self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows) #makes it so when you select anything you select the entire row
-        self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
-
-        main_layout = QVBoxLayout()
         title = QLabel("TARGET LIST")
+
+
+        #-------------------------layout-----------------------------
+        main_layout = QVBoxLayout()
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0,0,0,0)
 
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)
-        #self.table.setModel(self.table)
+        #-------------------------------------------
+
     def sizeHint(self):
         return QSize(700,200)
     

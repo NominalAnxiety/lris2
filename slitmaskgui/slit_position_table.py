@@ -88,25 +88,25 @@ class SlitDisplay(QWidget):
             QSizePolicy.Policy.MinimumExpanding
         )
 
-        #----------------------definitions------------------
-        self.data = data #will look like [[row,center,width],...
+        #---------------------------definitions----------------------
+        self.data = data #will look like [[row,center,width],...]
         self.table = CustomTableView()
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
-        
-        #-----------------------connections-----------------
+        title = QLabel("ROW DISPLAY WIDGET")
+
+        #--------------------------connections-----------------------
         self.table.selectionModel().selectionChanged.connect(self.row_selected)
 
-        #-------------------cosmetic configuration -------------
+        #----------------------------layout----------------------
         main_layout = QVBoxLayout()
-        title = QLabel("ROW DISPLAY WIDGET")
         main_layout.addWidget(title)
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0,0,0,0)
 
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)
-        
+        #------------------------------------------------------        
 
     def sizeHint(self):
         return QSize(40,120)

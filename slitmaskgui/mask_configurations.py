@@ -96,7 +96,7 @@ class MaskConfigurationsWidget(QWidget):
             QSizePolicy.Policy.Preferred
         )
 
-        #------------definitions--------------
+        #--------------------------------Definitions---------------------
         title = QLabel("MASK CONFIGURATIONS")
 
         open_button = Button(80,30,"Open")
@@ -112,14 +112,14 @@ class MaskConfigurationsWidget(QWidget):
 
         self.row_to_config_dict = {}
 
-        #------------------------button connections-----------------
+        #------------------------connections-----------------
         open_button.clicked.connect(self.open_button_clicked)
         save_button.clicked.connect(self.save_button_clicked)
         close_button.clicked.connect(self.close_button_clicked)
         export_button.clicked.connect(self.export_button_clicked)
         export_all_button.clicked.connect(self.export_all_button_clicked)
 
-        #-------------------cosmetic configuration-------------------
+        #-------------------layout-------------------
         group_box = QGroupBox()
         main_layout = QVBoxLayout()
         group_layout = QVBoxLayout()
@@ -150,8 +150,7 @@ class MaskConfigurationsWidget(QWidget):
         main_layout.setContentsMargins(0,0,0,0)
 
         self.setLayout(main_layout)
-        #--------------------------end of cosmetic configuration------------------
-
+        #------------------------------------------------
     def sizeHint(self):
         return QSize(300,60)
     
