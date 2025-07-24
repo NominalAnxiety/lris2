@@ -54,11 +54,22 @@ class TableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.TextAlignmentRole:
             return Qt.AlignmentFlag.AlignCenter
         return None
+    
+    def removeRow(self, row, count=1, parent=QModelIndex()):
+        if 0 <= row < len(self._data):
+            self.beginRemoveRows(parent, row, row)
+            del self._data[row]
+            self.endRemoveRows()
+            return True
+        return False
 
     def get_num_rows(self):
         return len(self._data)
     def get_row_num(self,index):
-        return index[0].row()
+        if len(index) > 0:
+            return index[0].row()
+        return None
+
     def rowCount(self, index):
         return len(self._data)
     def columnCount(self, index):
@@ -183,30 +194,38 @@ class MaskConfigurationsWidget(QWidget):
     def close_button_clicked(self,item):
         #this will delete the item from the list and the information that goes along with it
         #get selected item
-        print("close button clicked")
-        pass
+        row_num = self.model.get_row_num(self.table.selectedIndexes())
+        if row_num is not None:
+            del self.row_to_config_dict[row_num]
+            self.model.beginResetModel()
+            self.model.removeRow(row_num)
+            self.model.endResetModel()
 
     def export_button_clicked(self): #should probably change to export to avoid confusion with saved/unsaved which is actually updated/notupdated
         #this will save the current file selected in the table
-        try:
-            row_num = self.model.get_row_num(self.table.selectedIndexes()) #this gets the row num
-        except:
-            print("there are no rows")
-        with open("mask_config.txt","w") as f:
-            for i,item in self.row_to_config_dict[row_num].items():
-                line = f'{i} {item}\n'
-                f.write(line)
+        row_num = self.model.get_row_num(self.table.selectedIndexes()) #this gets the row num
+        if row_num is not None:
+            file_name, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save File",
+                "",
+                "All Files (*)"
+            )
+            if file_name:
+                with open(file_name,"w") as f:
+                    for i,item in self.row_to_config_dict[row_num].items():
+                        line = f'{i} {item}\n'
+                        f.write(line)
         
         
 
     def export_all_button_clicked(self):
         #this will save all unsaved files
-        print("export all button clicked")
-        pass
+        row_num = self.model.get_row_num(self.table.selectedIndexes())
 
     pyqtSlot()
     def update_table(self,info=None):
-        if info: #info for now will be a list [name,json]
+        if info is not None: #info for now will be a list [name,json]
             name, mask_config = info[0], info[1]
             self.model.beginResetModel()
             self.model._data.append(["Saved",name])
@@ -214,6 +233,11 @@ class MaskConfigurationsWidget(QWidget):
             row_num = self.model.get_num_rows() -1
             self.table.selectRow(row_num)
             self.row_to_config_dict.update({row_num: mask_config})
+        if info is type(int):
+            self.model.beginResetModel()
+            self.model._data
+            self.model.endResetModel()
+
 
         else:
             print("will change thing to saved")
