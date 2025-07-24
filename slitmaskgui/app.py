@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         layoutV2 = QVBoxLayout() #contains mask config widget and mask gen widget
 
         mask_config_widget = MaskConfigurationsWidget()
-        #mask_config_widget.setMaximumHeight(200)
+        mask_config_widget.setMaximumHeight(200)
         mask_gen_widget = MaskGenWidget()
         
 
