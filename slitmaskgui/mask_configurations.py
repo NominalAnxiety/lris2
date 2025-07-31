@@ -5,7 +5,11 @@ A button at the bottom to save the mask, and one right next to it to save all th
 """
 
 import json
-from PyQt6.QtCore import Qt, QAbstractTableModel,QSize, QModelIndex, pyqtSlot
+import os
+import logging
+from slitmaskgui.backend.star_list import StarList
+from PyQt6.QtCore import Qt, QAbstractTableModel,QSize, QModelIndex, pyqtSlot, pyqtSignal
+
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -21,7 +25,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
 
 )
-
+config_logger = logging.getLogger(__name__)
 class Button(QPushButton):
     def __init__(self,w,h,text):
         super().__init__()
@@ -69,7 +73,6 @@ class TableModel(QAbstractTableModel):
         if len(index) > 0:
             return index[0].row()
         return None
-
     def rowCount(self, index):
         return len(self._data)
     def columnCount(self, index):
@@ -99,6 +102,10 @@ class CustomTableView(QTableView):
 
 #I am unsure of whether to go with a abstract table model or an abstract list model
 class MaskConfigurationsWidget(QWidget):
+    change_data = pyqtSignal(list)
+    change_slit_image = pyqtSignal(dict)
+    change_row_widget = pyqtSignal(list)
+    reset_scene = pyqtSignal(bool)
     def __init__(self):
         super().__init__()
         
@@ -123,12 +130,15 @@ class MaskConfigurationsWidget(QWidget):
 
         self.row_to_config_dict = {}
 
+
         #------------------------connections-----------------
         open_button.clicked.connect(self.open_button_clicked)
         save_button.clicked.connect(self.save_button_clicked)
         close_button.clicked.connect(self.close_button_clicked)
         export_button.clicked.connect(self.export_button_clicked)
         export_all_button.clicked.connect(self.export_all_button_clicked)
+        self.table.selectionModel().selectionChanged.connect(self.selected) #sends the row number for the selected item
+
 
         #-------------------layout-------------------
         group_box = QGroupBox()
@@ -166,20 +176,27 @@ class MaskConfigurationsWidget(QWidget):
         return QSize(300,60)
     
     def open_button_clicked(self):
-        text_file_path, _ = QFileDialog.getOpenFileName(
+        config_logger.info(f"mask configurations: start of open button function {self.row_to_config_dict}")
+
+        file_path, _ = QFileDialog.getOpenFileName(
+
             self,
             "Select a File",
             "",
             "All files (*)" #will need to make sure it is a specific file
         )
         #update this with the row to json dict thing
-        if text_file_path: 
-            print(f"File Path {text_file_path}")
-            with open(text_file_path,"r") as f:
-                info = f.read()
-                self.update_table(("opened",info)) #doesn't work right now
+        if file_path: 
+            with open(file_path,'r') as f:
+                temp = f.read()
+                data = json.loads(temp)
+            mask_name = os.path.splitext(os.path.basename(file_path))[0]
+            self.update_table((mask_name,data)) #doesn't work right now
+            config_logger.info(f"mask_configurations: open button clicked {mask_name} {file_path}")
             #in the future this will take the mask config file and take the name from that file and display it
             #it will also auto select itself and display the mask configuration on the interactive slit mask
+        config_logger.info(f"mask configurations: end of open button function {self.row_to_config_dict}")
+
 
     def save_button_clicked(self,item):
         #This will update the mask configuration file to fit the changed mask
@@ -190,56 +207,83 @@ class MaskConfigurationsWidget(QWidget):
     def close_button_clicked(self,item):
         #this will delete the item from the list and the information that goes along with it
         #get selected item
+
+        config_logger.info(f"mask configurations: start of close button function {self.row_to_config_dict}")
+
         row_num = self.model.get_row_num(self.table.selectedIndexes())
         if row_num is not None:
             del self.row_to_config_dict[row_num]
             self.model.beginResetModel()
             self.model.removeRow(row_num)
             self.model.endResetModel()
+        if len(self.row_to_config_dict) == 0:
+            config_logger.info("mask configuratios: reseting scene")
+            self.reset_scene.emit(True)
+        config_logger.info(f"mask configurations: end of close button function {self.row_to_config_dict}")
+
             
 
     def export_button_clicked(self): #should probably change to export to avoid confusion with saved/unsaved which is actually updated/notupdated
         #this will save the current file selected in the table
+        config_logger.info(f"mask configurations: start of export button function {self.row_to_config_dict}")
         row_num = self.model.get_row_num(self.table.selectedIndexes()) #this gets the row num
+        index = self.model.index(row_num, 1)
+        name = self.model.data(index,Qt.ItemDataRole.DisplayRole)
         if row_num is not None:
-            file_name, _ = QFileDialog.getSaveFileName(
+            file_path, _ = QFileDialog.getSaveFileName(
                 self,
                 "Save File",
-                "",
-                "All Files (*)"
+                f"{name}",
+                "JSON Files (*.json)"
             )
-            if file_name:
-                with open(file_name,"w") as f:
-                    for i,item in self.row_to_config_dict[row_num].items():
-                        line = f'{i} {item}\n'
-                        f.write(line)
+            if file_path:
+                data = json.dumps(self.row_to_config_dict[row_num])
+                star_list = StarList(data,RA="00 00 00.00",Dec="+00 00 00.00",slit_width=0.7,auto_run=False)
+                mask_name = os.path.splitext(os.path.basename(file_path))
+                star_list.export_mask_config(file_path=file_path)
+
+        config_logger.info(f"mask configurations: end of export button function {self.row_to_config_dict}")
+
         
 
     def export_all_button_clicked(self):
         #this will save all unsaved files
         row_num = self.model.get_row_num(self.table.selectedIndexes())
 
-    pyqtSlot()
+    pyqtSlot(name="update_table")
     def update_table(self,info=None):
         #the first if statement is for opening a mask file and making a mask in the gui which will be automatically added
-        if info is not None: #info for now will be a list [name,json]
-            name, mask_config = info[0], info[1]
+        config_logger.info(f"mask configurations: start of update table function {self.row_to_config_dict}")
+        if info is not None: #info for now will be a list [name,file_path]
+            name, mask_info = info[0], info[1]
+
             self.model.beginResetModel()
             self.model._data.append(["Saved",name])
             self.model.endResetModel()
             row_num = self.model.get_num_rows() -1
+            self.row_to_config_dict.update({row_num: mask_info})
             self.table.selectRow(row_num)
-            self.row_to_config_dict.update({row_num: mask_config})
-        if info is type(int): #this is for deleting a row
-            pass 
-
         else:
             print("will change thing to saved")
+        config_logger.info(f"mask configurations: end of update table function {self.row_to_config_dict}")
         # when a mask configuration is run, this will save the data in a list
-
-    def selected(self,item):
+    @pyqtSlot(name="selected file path")
+    def selected(self):
         #will update the slit mask depending on which item is selected
-        pass
+        if len(self.row_to_config_dict) >0:
+            row = self.model.get_row_num(self.table.selectedIndexes())
+            config_logger.info(f"mask_configurations: row is selected function {row} {self.row_to_config_dict}")
+            data = json.dumps(self.row_to_config_dict[row])
+
+            slit_mask = StarList(data,RA="00 00 00.00",Dec="+00 00 00.00",slit_width=0.7,auto_run=False)
+            interactive_slit_mask = slit_mask.send_interactive_slit_list()
+
+            self.change_slit_image.emit(interactive_slit_mask)
+
+            self.change_data.emit(slit_mask.send_target_list())
+            self.change_row_widget.emit(slit_mask.send_row_widget_list())
+
+
 
 
 
