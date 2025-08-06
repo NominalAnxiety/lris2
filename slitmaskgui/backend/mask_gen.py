@@ -9,45 +9,68 @@ CSU_WIDTH = PLATE_SCALE*60*5 #width of the csu in mm (widgth is 5 arcmin)
 TOTAL_BAR_PAIRS = 72
 
 from itertools import groupby
-
 import json
+from astropy.coordinates import SkyCoord, Angle
+import astropy.units as u
+import numpy as np
 
 
-
-#for some reason I am splitting up everything into their own for statements
+#for some reason I am splitting up everything into their own for s©tatements
 #should be able to put this all into one for statement but I don't wanna think about that rnß
 class SlitMask:
-    def __init__(self,stars):
+    def __init__(self,stars,center,slit_width=0,pa=0,max_slit_length=72):
         self.stars = stars
+        self.center = center
+        self.slit_width = slit_width
+        self.pa = pa
         self.calc_y_pos()
+        self.calc_bar_id()
         self.optimize()
+        self.lengthen_slits(max_slit_length)
 
     def calc_y_pos(self):
-        #this will calculate the bar and x of every star and remove any that do not fit in position
-        initial_len = len(self.stars)
+        print(self.center)
         for obj in self.stars:
-            y = obj["y_mm"]
-            x = obj["x_mm"]
+            star = SkyCoord(obj["ra"], obj["dec"], unit=(u.hourangle, u.deg), frame='icrs')
+            separation = self.center.separation(star)
+            obj["center distance"] = separation.to(u.arcmin).value  # float is implicit in .value
+
+            # Wrap RA difference to [-180, 180) degrees and convert to arcsec
+            
+            delta_ra = (star.ra - self.center.ra).wrap_at(180 * u.deg).to(u.arcsec)
+
+            # Dec difference in arcsec (no wrap needed for Dec)
+            delta_dec = (star.dec - self.center.dec).to(u.arcsec)
+
+            # Correct RA offset for spherical projection
+            delta_ra_proj = delta_ra * np.cos(self.center.dec.radian)
+            print(delta_ra_proj)
+
+            # Convert to mm using plate scale
+            x_mm = delta_ra_proj.value * PLATE_SCALE
+            y_mm = delta_dec.value * PLATE_SCALE
+
+            obj["x_mm"] = x_mm
+            obj["y_mm"] = y_mm
+
+
+    def calc_bar_id(self):
+        #this will calculate the bar and x of every star and remove any that do not fit in position
+        for obj in self.stars:
+            y, x = obj["y_mm"], obj["x_mm"]
             y_step = CSU_HEIGHT/TOTAL_BAR_PAIRS
 
-            if y <= 0:
-                bar_id = TOTAL_BAR_PAIRS/2+round(abs(y/y_step))
-            elif y > 0: 
-                bar_id = TOTAL_BAR_PAIRS/2 -round(abs(y/y_step))
+            bar_id = TOTAL_BAR_PAIRS/2+round(abs(y/y_step)) if y<=0 else TOTAL_BAR_PAIRS/2 -round(abs(y/y_step))
+
             if self.check_if_within(x,y):
                 obj["bar_id"] = int(bar_id)
             else:
                 self.stars.remove(obj)
 
-
     
     def check_if_within(self,x,y):
         return abs(x) <= CSU_WIDTH / 2 and abs(y) <= CSU_HEIGHT / 2
-        #the delete and save is a temporary string that would tell another function to delete a star if it returned delete
-        #and save the star if it returned save
-        #this is just to make sure that all the stars that are given in the starlist are withing the boundaries
-        #I am going to change this to do it when calculating the y_pos (will check if within all PA)
-    
+
     def generate_pa(self):
         pass
 
@@ -62,20 +85,34 @@ class SlitMask:
             )
         highest_priority_stars = []
         for _, group in groupby(sorted_stars, key=lambda x: x["bar_id"]):
-    # Get the star with the highest priority in this group
             highest_priority_star = max(group, key=lambda x: x["priority"])
             highest_priority_stars.append(highest_priority_star)
         self.stars = highest_priority_stars
-        
-            
     
+    def lengthen_slits(self,max_length=3):
+        index = 0
+        while index < len(self.stars):
+            current_bar_id = self.stars[index]["bar_id"]
+            try:
+                slit_diff = self.stars[index+1]["bar_id"] - current_bar_id
+            except IndexError:
+                slit_diff = 72 - current_bar_id
+            slit_diff = slit_diff if slit_diff < max_length else max_length
 
+            if slit_diff > 1:
+                long_slit_list = [{**self.stars[index],"bar_id":current_bar_id+x} for x in range(slit_diff)]
+                self.stars[index+1:index+1] = long_slit_list
+                index += slit_diff
+            index += 1
+            
+        
     def return_mask(self):
         return json.dumps(self.stars)
-
     
     def make_mask(self):
         #will return a list that will be used by the csu to configure the slits 
         #this could also be used by the interactive slit mask
         pass
+
+
 
